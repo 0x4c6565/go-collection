@@ -5,19 +5,19 @@ import (
 	"slices"
 )
 
-type GoCollection[T any] iter.Seq[T]
+type Collection[T any] iter.Seq[T]
 
-func New[T any](seq iter.Seq[T]) *GoCollection[T] {
-	d := GoCollection[T](seq)
+func New[T any](seq iter.Seq[T]) *Collection[T] {
+	d := Collection[T](seq)
 	return &d
 }
 
-func NewFromSlice[T any](s []T) *GoCollection[T] {
-	d := GoCollection[T](slices.Values(s))
+func NewFromSlice[T any](s []T) *Collection[T] {
+	d := Collection[T](slices.Values(s))
 	return &d
 }
 
-func (c *GoCollection[T]) First() T {
+func (c *Collection[T]) First() T {
 	for t := range *c {
 		return t
 	}
@@ -25,7 +25,7 @@ func (c *GoCollection[T]) First() T {
 	panic("no items")
 }
 
-func (c *GoCollection[T]) Last() T {
+func (c *Collection[T]) Last() T {
 	var l T
 	for t := range *c {
 		l = t
@@ -34,7 +34,7 @@ func (c *GoCollection[T]) Last() T {
 	return l
 }
 
-func (c *GoCollection[T]) Count() int {
+func (c *Collection[T]) Count() int {
 	count := 0
 	for range *c {
 		count++
@@ -43,7 +43,7 @@ func (c *GoCollection[T]) Count() int {
 	return count
 }
 
-func (c *GoCollection[T]) Where(f func(x T) bool) *GoCollection[T] {
+func (c *Collection[T]) Where(f func(x T) bool) *Collection[T] {
 	return New(func(yield func(T) bool) {
 		for v := range *c {
 			if f(v) && !yield(v) {
@@ -53,7 +53,7 @@ func (c *GoCollection[T]) Where(f func(x T) bool) *GoCollection[T] {
 	})
 }
 
-func (c *GoCollection[T]) Contains(f func(x T) bool) bool {
+func (c *Collection[T]) Contains(f func(x T) bool) bool {
 	for t := range *c {
 		if f(t) {
 			return true
@@ -62,7 +62,7 @@ func (c *GoCollection[T]) Contains(f func(x T) bool) bool {
 	return false
 }
 
-func (c *GoCollection[T]) Slice() []T {
+func (c *Collection[T]) Slice() []T {
 	var val []T
 	for t := range *c {
 		val = append(val, t)
@@ -70,7 +70,7 @@ func (c *GoCollection[T]) Slice() []T {
 	return val
 }
 
-func (c *GoCollection[T]) Select(f func(x T) any) *GoCollection[any] {
+func (c *Collection[T]) Select(f func(x T) any) *Collection[any] {
 	return New(func(yield func(any) bool) {
 		for v := range *c {
 			if !yield(f(v)) {
