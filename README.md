@@ -1,3 +1,3 @@
 # Go Collection
 
-Experimenting with 
+Experimenting with iterators
