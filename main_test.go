@@ -21,6 +21,13 @@ func TestLast(t *testing.T) {
 	assert.Equal(t, "c", v)
 }
 
+func TestCount(t *testing.T) {
+	c := gocollection.NewFromSlice([]string{"a", "b", "c"})
+	v := c.Count()
+
+	assert.Equal(t, 3, v)
+}
+
 func TestContains(t *testing.T) {
 	c := gocollection.NewFromSlice([]string{"a", "b", "c"})
 	t.Run("true", func(t *testing.T) {
