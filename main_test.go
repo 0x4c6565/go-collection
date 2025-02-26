@@ -14,6 +14,13 @@ func TestFirst(t *testing.T) {
 	assert.Equal(t, "a", v)
 }
 
+func TestLast(t *testing.T) {
+	c := gocollection.NewFromSlice([]string{"a", "b", "c"})
+	v := c.Last()
+
+	assert.Equal(t, "c", v)
+}
+
 func TestContains(t *testing.T) {
 	c := gocollection.NewFromSlice([]string{"a", "b", "c"})
 	t.Run("true", func(t *testing.T) {
@@ -61,24 +68,14 @@ func TestSelect(t *testing.T) {
 	})
 }
 
-// println(c.Where(func(x string) bool {
-// 	return x == "b"
-// }).First())
+func TestWhere(t *testing.T) {
+	c := gocollection.NewFromSlice([]string{"a", "b", "c"})
+	t.Run("true", func(t *testing.T) {
+		v := c.Where(func(x string) bool {
+			return x == "a"
+		}).Slice()
 
-// println(c.Last())
-
-// var teststructs []teststruct
-// teststructs = append(teststructs, teststruct{
-// 	Property1: "s1",
-// 	Property2: 1,
-// }, teststruct{
-// 	Property1: "s2",
-// 	Property2: 2,
-// })
-
-// s := golinq.NewFromSlice(teststructs)
-// for _, val := range s.Select(func(x teststruct) any {
-// 	return x.Property1
-// }).Slice() {
-// 	println(val.(string))
-// }
+		assert.Len(t, v, 1)
+		assert.Equal(t, "a", v[0])
+	})
+}
