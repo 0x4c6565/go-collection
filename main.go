@@ -1,14 +1,27 @@
 package gocollection
 
 import (
+	"errors"
 	"iter"
 	"slices"
 )
 
+var ErrNoElement = errors.New("no element")
+
 type Collection[T any] iter.Seq[T]
 
-func New[T any](seq iter.Seq[T]) *Collection[T] {
-	d := Collection[T](seq)
+func New[T any, I iter.Seq[T] | []T](seq I) *Collection[T] {
+	var d Collection[T]
+	if s, ok := any(seq).([]T); ok {
+		d = Collection[T](slices.Values(s))
+	} else {
+		d = Collection[T](any(seq).(iter.Seq[T]))
+	}
+	return &d
+}
+
+func NewFromIterator[T any](s iter.Seq[T]) *Collection[T] {
+	d := Collection[T](s)
 	return &d
 }
 
@@ -17,12 +30,18 @@ func NewFromSlice[T any](s []T) *Collection[T] {
 	return &d
 }
 
-func (c *Collection[T]) First() T {
+func (c *Collection[T]) First() (T, error) {
 	for t := range *c {
-		return t
+		return t, nil
 	}
 
-	panic("no items")
+	var result T
+	return result, ErrNoElement
+}
+
+func (c *Collection[T]) FirstOrDefault() T {
+	result, _ := c.First()
+	return result
 }
 
 func (c *Collection[T]) Last() T {
@@ -44,13 +63,13 @@ func (c *Collection[T]) Count() int {
 }
 
 func (c *Collection[T]) Where(f func(x T) bool) *Collection[T] {
-	return New(func(yield func(T) bool) {
+	return New[T](iter.Seq[T](func(yield func(T) bool) {
 		for v := range *c {
 			if f(v) && !yield(v) {
 				return
 			}
 		}
-	})
+	}))
 }
 
 func (c *Collection[T]) Contains(f func(x T) bool) bool {
@@ -71,11 +90,11 @@ func (c *Collection[T]) Slice() []T {
 }
 
 func (c *Collection[T]) Select(f func(x T) any) *Collection[any] {
-	return New(func(yield func(any) bool) {
+	return New[any](iter.Seq[any](func(yield func(any) bool) {
 		for v := range *c {
 			if !yield(f(v)) {
 				return
 			}
 		}
-	})
+	}))
 }
