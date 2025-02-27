@@ -39,6 +39,26 @@ func TestNewFromIterator(t *testing.T) {
 	assert.Equal(t, "a", v)
 }
 
+func TestAll(t *testing.T) {
+	t.Run("true", func(t *testing.T) {
+		c := gocollection.New[string]([]string{"a", "b", "c"})
+		v := c.All(func(x string) bool {
+			return x != ""
+		})
+
+		assert.True(t, v)
+	})
+
+	t.Run("false", func(t *testing.T) {
+		c := gocollection.New[string]([]string{"a", "b", "c"})
+		v := c.All(func(x string) bool {
+			return x == "a"
+		})
+
+		assert.False(t, v)
+	})
+}
+
 func TestFirst(t *testing.T) {
 	t.Run("NoElement", func(t *testing.T) {
 		c := gocollection.New[string]([]string{})

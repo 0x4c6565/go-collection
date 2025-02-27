@@ -30,6 +30,15 @@ func NewFromSlice[T any](s []T) *Collection[T] {
 	return &d
 }
 
+func (c *Collection[T]) All(f func(x T) bool) bool {
+	for t := range *c {
+		if !f(t) {
+			return false
+		}
+	}
+	return true
+}
+
 func (c *Collection[T]) First() (T, error) {
 	for t := range *c {
 		return t, nil
