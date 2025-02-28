@@ -1,4 +1,4 @@
-package gocollection
+package collection
 
 import (
 	"errors"
@@ -106,4 +106,14 @@ func (c *Collection[T]) Select(f func(x T) any) *Collection[any] {
 			}
 		}
 	}))
+}
+
+func Average[T int | float64](c *Collection[T]) float64 {
+	sum := 0.0
+	count := 0
+	for t := range *c {
+		sum += float64(t)
+		count++
+	}
+	return sum / float64(count)
 }
