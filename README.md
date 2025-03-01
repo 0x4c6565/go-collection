@@ -65,10 +65,9 @@ func main() {
 	// Find adults and order them by age
 	adults := people.
 		Where(func(p Person) bool { return p.Age >= 18 }).
-		OrderBy(func(p Person) any { return p.Age }, true). // Ascending order
-		Slice()
+		OrderBy(func(p Person) any { return p.Age }, true) // Ascending order
 	
-	for _, person := range adults {
+	for _, person := range *adults {
 		fmt.Printf("%s: %d years old\n", person.Name, person.Age)
 	}
     
@@ -77,45 +76,6 @@ func main() {
 	// Alice: 25 years old
 	// Bob: 30 years old
 	// Dave: 35 years old
-}
-```
-
-### Grouping and Aggregation
-
-```go
-package main
-
-import (
-	"fmt"
-	"github.com/0x4c6565/go-collection"
-)
-
-type Product struct {
-	Name     string
-	Category string
-	Price    float64
-}
-
-func main() {
-	products := collection.NewFromSlice([]Product{
-		{Name: "Apple", Category: "Fruit", Price: 1.99},
-		{Name: "Banana", Category: "Fruit", Price: 0.99},
-		{Name: "Carrot", Category: "Vegetable", Price: 0.50},
-		{Name: "Potato", Category: "Vegetable", Price: 0.75},
-	})
-	
-	// Group by category and calculate average price
-	groups := products.GroupBy(func(p Product) any { return p.Category })
-	
-	for category, group := range groups {
-		avg := collection.Average(group.Select(func(p Product) any { return p.Price }).
-			(*collection.Collection[float64]))
-		fmt.Printf("Category: %s, Average Price: £%.2f\n", category, avg)
-	}
-
-	// Output:
-	// Category: Fruit, Average Price: £1.49
-	// Category: Vegetable, Average Price: £0.63
 }
 ```
 
