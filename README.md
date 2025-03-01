@@ -130,10 +130,6 @@ for category, group := range groups {
 - `Sum[T SumTypes](c *Collection[T]) *big.Float` - Calculate sum of numeric collection
 - `SumInt[T SumIntTypes](c *Collection[T]) *big.Int` - Calculate sum of integer collection
 
-### Conversion
-
-- `Slice() []T` - Convert collection to a slice
-
 ## Available Collection Methods
 
 ### Filtering and Projection
@@ -173,6 +169,10 @@ for category, group := range groups {
 
 - `Count() int` - Count elements in the collection
 - `GroupBy(keySelector func(x T) any) map[any]*Collection[T]` - Group elements by key
+
+### Conversion
+
+- `Slice() []T` - Convert collection to a slice
 
 ## Error Handling
 
