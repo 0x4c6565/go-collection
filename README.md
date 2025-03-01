@@ -129,6 +129,7 @@ for category, group := range groups {
 - `Average[T AverageTypes](c *Collection[T]) *big.Float` - Calculate average of numeric collection
 - `Sum[T SumTypes](c *Collection[T]) *big.Float` - Calculate sum of numeric collection
 - `SumInt[T SumIntTypes](c *Collection[T]) *big.Int` - Calculate sum of integer collection
+- `Max[T numericalTypes](c *Collection[T]) T` - Calculate the largest value in the numberic collection
 
 ## Available Collection Methods
 

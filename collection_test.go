@@ -1413,3 +1413,89 @@ func TestSumInt(t *testing.T) {
 		assert.Equal(t, int64(6), f)
 	})
 }
+
+func TestMax(t *testing.T) {
+	t.Run("uint", func(t *testing.T) {
+		c := collection.NewFromSlice([]uint{1, 2, 3})
+		v := collection.Max(c)
+
+		assert.Equal(t, uint(3), v)
+	})
+
+	t.Run("uint8", func(t *testing.T) {
+		c := collection.NewFromSlice([]uint8{1, 2, 3})
+		v := collection.Max(c)
+
+		assert.Equal(t, uint8(3), v)
+	})
+
+	t.Run("uint16", func(t *testing.T) {
+		c := collection.NewFromSlice([]uint16{1, 2, 3})
+		v := collection.Max(c)
+
+		assert.Equal(t, uint16(3), v)
+	})
+
+	t.Run("uint32", func(t *testing.T) {
+		c := collection.NewFromSlice([]uint32{1, 2, 3})
+		v := collection.Max(c)
+
+		assert.Equal(t, uint32(3), v)
+	})
+
+	t.Run("uint64", func(t *testing.T) {
+		c := collection.NewFromSlice([]uint64{1, 2, 3})
+		v := collection.Max(c)
+
+		assert.Equal(t, uint64(3), v)
+	})
+
+	t.Run("int", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 3})
+		v := collection.Max(c)
+
+		assert.Equal(t, int(3), v)
+	})
+
+	t.Run("int8", func(t *testing.T) {
+		c := collection.NewFromSlice([]int8{1, 2, 3})
+		v := collection.Max(c)
+
+		assert.Equal(t, int8(3), v)
+	})
+
+	t.Run("int16", func(t *testing.T) {
+		c := collection.NewFromSlice([]int16{1, 2, 3})
+		v := collection.Max(c)
+
+		assert.Equal(t, int16(3), v)
+	})
+
+	t.Run("int32", func(t *testing.T) {
+		c := collection.NewFromSlice([]int32{1, 2, 3})
+		v := collection.Max(c)
+
+		assert.Equal(t, int32(3), v)
+	})
+
+	t.Run("int64", func(t *testing.T) {
+		c := collection.NewFromSlice([]int64{1, 2, 3})
+		v := collection.Max(c)
+
+		assert.Equal(t, int64(3), v)
+	})
+
+	t.Run("float32", func(t *testing.T) {
+		c := collection.NewFromSlice([]float32{1, 2, 3})
+		v := collection.Max(c)
+
+		assert.Equal(t, float32(3), v)
+	})
+
+	t.Run("float64", func(t *testing.T) {
+		c := collection.NewFromSlice([]float64{1, 2, 3})
+		v := collection.Max(c)
+
+		assert.Equal(t, float64(3), v)
+	})
+}

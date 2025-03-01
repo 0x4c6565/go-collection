@@ -245,8 +245,12 @@ func (c *Collection[T]) Any(f func(x T) bool) bool {
 	return false
 }
 
-type orderByNumbericalTypes interface {
+type numericalTypes interface {
 	uint | uint8 | uint16 | uint32 | uint64 | int | int8 | int16 | int32 | int64 | float32 | float64
+}
+
+type orderByNumbericalTypes interface {
+	numericalTypes
 }
 
 func orderByNumerical[T orderByNumbericalTypes](a T, b T, ascending bool) int {
@@ -264,7 +268,6 @@ func orderByNumerical[T orderByNumbericalTypes](a T, b T, ascending bool) int {
 		return 1
 	}
 	return 0
-
 }
 
 // OrderBy returns a collection ordered by the key selector
@@ -459,6 +462,17 @@ func SumInt[T SumIntTypes](c *Collection[T]) *big.Int {
 		sum += int64(t)
 	}
 	return big.NewInt(sum)
+}
+
+// Max returns the largest value in the collection
+func Max[T numericalTypes](c *Collection[T]) T {
+	max := T(0)
+	for t := range *c {
+		if t > max {
+			max = t
+		}
+	}
+	return max
 }
 
 // Select transforms each element in the collection using the selector function
