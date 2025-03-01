@@ -99,7 +99,6 @@ func main() {
 ### Ordering
 
 - `OrderBy(f func(x T) any, ascending bool) *Collection[T]` - Order elements by a key
-- `ThenBy(f func(x T) any, ascending bool) *Collection[T]` - Secondary ordering
 
 ### Element Operations
 
