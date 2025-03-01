@@ -138,12 +138,15 @@ for category, group := range groups {
 - `Select(f func(x T) any) *Collection[any]` - Transform elements using a selector function
 - `SelectMany(f func(x T) *Collection[any]) *Collection[any]` - Project and flatten collections
 - `Take(n int) *Collection[T]` - Get only the first n elements
+- `TakeUntil(f func(x T) bool) *Collection[T]` - Get elements until the predicate is satisfied
 - `Skip(n int) *Collection[T]` - Skip the first n elements
+- `SkipUntil(f func(x T) bool) *Collection[T]` - Skip elements until predicate is satisfied
 - `Distinct(equals func(a, b T) bool) *Collection[T]` - Get only distinct elements
 
 ### Ordering
 
 - `OrderBy(f func(x T) any, ascending bool) *Collection[T]` - Order elements by a key
+- `Reverse() *Collection[T]` - Reverse elements
 
 ### Element Operations
 

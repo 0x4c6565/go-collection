@@ -162,6 +162,21 @@ func (c *Collection[T]) Skip(n int) *Collection[T] {
 	}))
 }
 
+// SkipUntil returns a collection that skips elements until the predicate is satisfied
+func (c *Collection[T]) SkipUntil(f func(x T) bool) *Collection[T] {
+	return New[T](iter.Seq[T](func(yield func(T) bool) {
+		skip := true
+		for v := range *c {
+			if !skip || f(v) {
+				skip = false
+				if !yield(v) {
+					return
+				}
+			}
+		}
+	}))
+}
+
 // Take returns a collection of only the first n elements
 func (c *Collection[T]) Take(n int) *Collection[T] {
 	return New[T](iter.Seq[T](func(yield func(T) bool) {
@@ -173,6 +188,20 @@ func (c *Collection[T]) Take(n int) *Collection[T] {
 				}
 				count++
 			} else {
+				return
+			}
+		}
+	}))
+}
+
+// TakeUntil returns a collection of elements until the predicate is satisfied
+func (c *Collection[T]) TakeUntil(f func(x T) bool) *Collection[T] {
+	return New[T](iter.Seq[T](func(yield func(T) bool) {
+		for v := range *c {
+			if f(v) {
+				return
+			}
+			if !yield(v) {
 				return
 			}
 		}
@@ -342,6 +371,13 @@ func (c *Collection[T]) Except(other *Collection[T], equals func(a, b T) bool) *
 			}
 		}
 	}))
+}
+
+// Reverse returns a collection with the elements in reverse order
+func (c *Collection[T]) Reverse() *Collection[T] {
+	slice := c.Slice()
+	slices.Reverse(slice)
+	return NewFromSlice(slice)
 }
 
 // Slice converts the collection to a slice
