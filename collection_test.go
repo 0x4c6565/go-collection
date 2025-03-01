@@ -527,6 +527,94 @@ func TestTakeUntil(t *testing.T) {
 	})
 }
 
+func TestTakeWhile(t *testing.T) {
+	t.Run("TakeWhileSome", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 3, 4})
+		result := c.TakeWhile(func(x int) bool {
+			return x < 3
+		}).Slice()
+
+		assert.Equal(t, 2, len(result))
+		assert.Equal(t, 1, result[0])
+		assert.Equal(t, 2, result[1])
+	})
+
+	t.Run("TakeWhileAll", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 3, 4})
+		result := c.TakeWhile(func(x int) bool {
+			return x < 5
+		}).Slice()
+
+		assert.Equal(t, 4, len(result))
+		assert.Equal(t, 1, result[0])
+		assert.Equal(t, 2, result[1])
+		assert.Equal(t, 3, result[2])
+		assert.Equal(t, 4, result[3])
+	})
+
+	t.Run("TakeWhileNone", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{})
+		result := c.TakeWhile(func(x int) bool {
+			return x < 5
+		}).Slice()
+
+		assert.Equal(t, 0, len(result))
+	})
+
+	t.Run("Break", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 3, 4})
+		for range *c.TakeWhile(func(x int) bool {
+			return x < 5
+		}) {
+			break
+		}
+	})
+}
+
+func TestSkipWhile(t *testing.T) {
+	t.Run("SkipWhileSome", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 3, 4})
+		result := c.SkipWhile(func(x int) bool {
+			return x < 3
+		}).Slice()
+
+		assert.Equal(t, 2, len(result))
+		assert.Equal(t, 3, result[0])
+		assert.Equal(t, 4, result[1])
+	})
+
+	t.Run("SkipWhileAll", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 3, 4})
+		result := c.SkipWhile(func(x int) bool {
+			return x < 1
+		}).Slice()
+
+		assert.Equal(t, 4, len(result))
+		assert.Equal(t, 1, result[0])
+		assert.Equal(t, 2, result[1])
+		assert.Equal(t, 3, result[2])
+
+	})
+
+	t.Run("SkipWhileNone", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 3, 4})
+		result := c.SkipWhile(func(x int) bool {
+			return x < 5
+		}).Slice()
+
+		assert.Equal(t, 0, len(result))
+	})
+
+	t.Run("Break", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 3, 4})
+		for range *c.SkipWhile(func(x int) bool {
+			return x < 5
+		}) {
+			break
+		}
+	})
+}
+
 func TestAny(t *testing.T) {
 	t.Run("True", func(t *testing.T) {
 		c := collection.NewFromSlice([]string{"a", "b", "c"})

@@ -177,6 +177,20 @@ func (c *Collection[T]) SkipUntil(f func(x T) bool) *Collection[T] {
 	}))
 }
 
+func (c *Collection[T]) SkipWhile(f func(x T) bool) *Collection[T] {
+	return New[T](iter.Seq[T](func(yield func(T) bool) {
+		skip := true
+		for v := range *c {
+			if !skip || !f(v) {
+				skip = false
+				if !yield(v) {
+					return
+				}
+			}
+		}
+	}))
+}
+
 // Take returns a collection of only the first n elements
 func (c *Collection[T]) Take(n int) *Collection[T] {
 	return New[T](iter.Seq[T](func(yield func(T) bool) {
@@ -199,6 +213,19 @@ func (c *Collection[T]) TakeUntil(f func(x T) bool) *Collection[T] {
 	return New[T](iter.Seq[T](func(yield func(T) bool) {
 		for v := range *c {
 			if f(v) {
+				return
+			}
+			if !yield(v) {
+				return
+			}
+		}
+	}))
+}
+
+func (c *Collection[T]) TakeWhile(f func(x T) bool) *Collection[T] {
+	return New[T](iter.Seq[T](func(yield func(T) bool) {
+		for v := range *c {
+			if !f(v) {
 				return
 			}
 			if !yield(v) {
