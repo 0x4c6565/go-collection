@@ -464,13 +464,27 @@ func SumInt[T SumIntTypes](c *Collection[T]) *big.Int {
 	return big.NewInt(sum)
 }
 
+func Min[T numericalTypes](c *Collection[T]) T {
+	min := T(0)
+	first := true
+	for t := range *c {
+		if first || t < min {
+			min = t
+		}
+		first = false
+	}
+	return min
+}
+
 // Max returns the largest value in the collection
 func Max[T numericalTypes](c *Collection[T]) T {
 	max := T(0)
+	first := true
 	for t := range *c {
-		if t > max {
+		if first || t > max {
 			max = t
 		}
+		first = false
 	}
 	return max
 }
