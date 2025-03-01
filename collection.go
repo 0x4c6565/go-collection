@@ -48,27 +48,12 @@ func (c *Collection[T]) Where(f func(x T) bool) *Collection[T] {
 
 // Select transforms each element in the collection using the selector function
 func (c *Collection[T]) Select(f func(x T) any) *Collection[any] {
-	return New[any](iter.Seq[any](func(yield func(any) bool) {
-		for v := range *c {
-			if !yield(f(v)) {
-				return
-			}
-		}
-	}))
+	return Select(c, f)
 }
 
 // SelectMany projects each element of the collection to a new collection and flattens the resulting collections into one
 func (c *Collection[T]) SelectMany(f func(x T) *Collection[any]) *Collection[any] {
-	return New[any](iter.Seq[any](func(yield func(any) bool) {
-		for v := range *c {
-			innerCollection := f(v)
-			for innerValue := range *innerCollection {
-				if !yield(innerValue) {
-					return
-				}
-			}
-		}
-	}))
+	return SelectMany(c, f)
 }
 
 // All returns true if all elements satisfy the predicate
@@ -411,4 +396,29 @@ func SumInt[T SumIntTypes](c *Collection[T]) *big.Int {
 		sum += int64(t)
 	}
 	return big.NewInt(sum)
+}
+
+// Select transforms each element in the collection using the selector function
+func Select[T any, E any](c *Collection[T], f func(x T) E) *Collection[E] {
+	return New[E](iter.Seq[E](func(yield func(E) bool) {
+		for v := range *c {
+			if !yield(f(v)) {
+				return
+			}
+		}
+	}))
+}
+
+// SelectMany projects each element of the collection to a new collection and flattens the resulting collections into one
+func SelectMany[T any, E any](c *Collection[T], f func(x T) *Collection[E]) *Collection[E] {
+	return New[E](iter.Seq[E](func(yield func(E) bool) {
+		for v := range *c {
+			innerCollection := f(v)
+			for innerValue := range *innerCollection {
+				if !yield(innerValue) {
+					return
+				}
+			}
+		}
+	}))
 }

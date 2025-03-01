@@ -79,6 +79,31 @@ func main() {
 }
 ```
 
+### Grouping and Aggregation
+
+```go
+type Product struct {
+	Name     string
+	Category string
+	Price    float64
+}
+
+products := collection.NewFromSlice([]Product{
+	{Name: "Apple", Category: "Fruit", Price: 1.99},
+	{Name: "Banana", Category: "Fruit", Price: 0.99},
+	{Name: "Carrot", Category: "Vegetable", Price: 0.50},
+	{Name: "Potato", Category: "Vegetable", Price: 0.75},
+})
+
+// Group by category and calculate average price
+groups := products.GroupBy(func(p Product) any { return p.Category })
+
+for category, group := range groups {
+	avg := collection.Average(collection.Select(group, func(p Product) float64 { return p.Price }))
+	fmt.Printf("Category: %s, Average Price: £%.2f\n", category, avg)
+}
+```
+
 ## Available Functions
 
 ### Collection Creation
@@ -86,6 +111,23 @@ func main() {
 - `New[T any, I iter.Seq[T] | []T](seq I) *Collection[T]` - Create a collection from an iterator or slice
 - `NewFromIterator[T any](s iter.Seq[T]) *Collection[T]` - Create a collection from an iterator
 - `NewFromSlice[T any](s []T) *Collection[T]` - Create a collection from a slice
+
+### Filtering and Projection
+
+- `Select[T any, e any](c *Collection[T], f func(x T) e) *Collection[e]` - Transform elements using a selector function
+- `SelectMany[T any, E any](c *Collection[T], f func(x T) *Collection[E]) *Collection[E]` - Project and flatten collections
+
+### Numeric Operations
+
+- `Average[T AverageTypes](c *Collection[T]) *big.Float` - Calculate average of numeric collection
+- `Sum[T SumTypes](c *Collection[T]) *big.Float` - Calculate sum of numeric collection
+- `SumInt[T SumIntTypes](c *Collection[T]) *big.Int` - Calculate sum of integer collection
+
+### Conversion
+
+- `Slice() []T` - Convert collection to a slice
+
+## Available Collection Methods
 
 ### Filtering and Projection
 
@@ -124,16 +166,6 @@ func main() {
 
 - `Count() int` - Count elements in the collection
 - `GroupBy(keySelector func(x T) any) map[any]*Collection[T]` - Group elements by key
-
-### Numeric Operations
-
-- `Average[T AverageTypes](c *Collection[T]) *big.Float` - Calculate average of numeric collection
-- `Sum[T SumTypes](c *Collection[T]) *big.Float` - Calculate sum of numeric collection
-- `SumInt[T SumIntTypes](c *Collection[T]) *big.Int` - Calculate sum of integer collection
-
-### Conversion
-
-- `Slice() []T` - Convert collection to a slice
 
 ## Error Handling
 
