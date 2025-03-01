@@ -82,6 +82,13 @@ func main() {
 ### Grouping and Aggregation
 
 ```go
+package main
+
+import (
+	"fmt"
+	"github.com/0x4c6565/go-collection"
+)
+
 type Product struct {
 	Name     string
 	Category string
