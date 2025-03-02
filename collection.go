@@ -516,6 +516,22 @@ func Zip[T1, T2, TResult any](c1 *Collection[T1], c2 *Collection[T2], zipper fun
 	}))
 }
 
+func (c *Collection[T]) ElementAt(index int) (T, error) {
+	var d T
+	if index < 0 {
+		return d, errors.New("index must be non-negative")
+	}
+
+	count := 0
+	for v := range *c {
+		if count == index {
+			return v, nil
+		}
+		count++
+	}
+	return d, errors.New("index out of range")
+}
+
 // Slice converts the collection to a slice
 func (c *Collection[T]) Slice() []T {
 	var val []T

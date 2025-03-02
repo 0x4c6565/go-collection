@@ -142,6 +142,7 @@ for category, group := range groups {
 - `FirstOrError() (T, error)` - Get the first element or error
 - `Last() (T, bool)` - Get the last element or false
 - `LastOrError() (T, error)` - Get the last element or error
+- `ElementAt(index int) (T, error)` Get the element at index or error
 
 ### Boolean Operations
 
