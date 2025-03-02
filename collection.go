@@ -254,12 +254,12 @@ func (c *Collection[T]) Any(f func(x T) bool) bool {
 	return false
 }
 
-type numericalTypes interface {
+type NumericalTypes interface {
 	uint | uint8 | uint16 | uint32 | uint64 | int | int8 | int16 | int32 | int64 | float32 | float64
 }
 
 type orderByNumbericalTypes interface {
-	numericalTypes
+	NumericalTypes
 }
 
 func orderByNumerical[T orderByNumbericalTypes](a T, b T, ascending bool) int {
@@ -595,7 +595,7 @@ func SumInt[T SumIntTypes](c *Collection[T]) *big.Int {
 	return big.NewInt(sum)
 }
 
-func Min[T numericalTypes](c *Collection[T]) T {
+func Min[T NumericalTypes](c *Collection[T]) T {
 	min := T(0)
 	first := true
 	for t := range *c {
@@ -608,7 +608,7 @@ func Min[T numericalTypes](c *Collection[T]) T {
 }
 
 // Max returns the largest value in the collection
-func Max[T numericalTypes](c *Collection[T]) T {
+func Max[T NumericalTypes](c *Collection[T]) T {
 	max := T(0)
 	first := true
 	for t := range *c {
