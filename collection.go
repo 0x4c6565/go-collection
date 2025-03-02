@@ -458,6 +458,15 @@ func (c *Collection[T]) Chunk(size int) []*Collection[T] {
 	return chunks
 }
 
+// Aggregate applies an accumulator function over collection
+func (c *Collection[T]) Aggregate(seed any, accumulator func(result any, item T) any) any {
+	result := seed
+	for item := range *c {
+		result = accumulator(result, item)
+	}
+	return result
+}
+
 // Slice converts the collection to a slice
 func (c *Collection[T]) Slice() []T {
 	var val []T

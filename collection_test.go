@@ -1188,6 +1188,54 @@ func TestChunk(t *testing.T) {
 	assert.Equal(t, "h", result[2].Slice()[1])
 }
 
+func TestAggregate(t *testing.T) {
+	t.Run("Logic", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"Amsterdam", "Berlin", "New York", "San Francisco"})
+
+		result := c.Aggregate("Paris", func(accumulator any, item string) any {
+			if len(accumulator.(string)) < len(item) {
+				return item
+			}
+
+			return accumulator
+		})
+
+		assert.Equal(t, "San Francisco", result)
+	})
+
+	t.Run("Sum", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 3, 4, 5})
+
+		result := c.Aggregate(0, func(accumulator any, item int) any {
+			return accumulator.(int) + item
+		})
+
+		assert.Equal(t, 15, result)
+	})
+
+	t.Run("Concatenation", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c"})
+
+		result := c.Aggregate("", func(accumulator any, item string) any {
+			return accumulator.(string) + item
+		})
+
+		assert.Equal(t, "abc", result)
+	})
+
+	t.Run("EmptyCollection", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{})
+
+		seed := 10
+		result := c.Aggregate(seed, func(accumulator any, item int) any {
+			assert.Fail(t, "This should not be called")
+			return nil
+		})
+
+		assert.Equal(t, seed, result)
+	})
+}
+
 func TestSlice(t *testing.T) {
 	c := collection.NewFromSlice([]string{"a", "b", "c"})
 	v := c.Slice()

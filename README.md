@@ -158,6 +158,7 @@ for category, group := range groups {
 - `Count() int` - Count elements in the collection
 - `GroupBy(keySelector func(x T) any) map[any]*Collection[T]` - Group elements by key
 - `Chunk(size int) []*Collection[T]` Split collection into chunks of the specified size
+- `Aggregate(seed any, accumulator func(result any, item T) any) any` - Applies an accumulator function over collection
 
 ### Conversion
 
