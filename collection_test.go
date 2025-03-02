@@ -26,6 +26,14 @@ func TestNew(t *testing.T) {
 	})
 }
 
+func TestNewFromIterator(t *testing.T) {
+	s := []string{"a", "b", "c"}
+	c := collection.NewFromIterator(slices.Values(s))
+	v, _ := c.First()
+
+	assert.Equal(t, "a", v)
+}
+
 func TestNewFromSlice(t *testing.T) {
 	c := collection.NewFromSlice([]string{"a", "b", "c"})
 	v, _ := c.First()
@@ -33,12 +41,15 @@ func TestNewFromSlice(t *testing.T) {
 	assert.Equal(t, "a", v)
 }
 
-func TestNewFromIterator(t *testing.T) {
-	s := []string{"a", "b", "c"}
-	c := collection.NewFromIterator(slices.Values(s))
+func TestNewFromStringMap(t *testing.T) {
+	m := map[string]string{
+		"key1": "value1",
+		"key2": "value2",
+	}
+	c := collection.NewFromStringMap(m)
 	v, _ := c.First()
 
-	assert.Equal(t, "a", v)
+	assert.Contains(t, []string{"value1", "value2"}, v)
 }
 
 func TestWhere(t *testing.T) {
@@ -1284,6 +1295,26 @@ func TestSlice(t *testing.T) {
 	v := c.Slice()
 
 	assert.Equal(t, []string{"a", "b", "c"}, v)
+}
+
+func TestStringMap(t *testing.T) {
+	type person struct {
+		Name string
+		Age  int
+	}
+	c := collection.NewFromSlice([]person{
+		{Name: "Alice", Age: 25},
+		{Name: "Bob", Age: 30},
+		{Name: "Charlie", Age: 35},
+	})
+	v := c.StringMap(func(x person) string {
+		return x.Name
+	})
+	s := c.Slice()
+
+	assert.Equal(t, s[0], v["Alice"])
+	assert.Equal(t, s[1], v["Bob"])
+	assert.Equal(t, s[2], v["Charlie"])
 }
 
 func TestAverage(t *testing.T) {

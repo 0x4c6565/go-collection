@@ -35,6 +35,15 @@ func NewFromSlice[T any](s []T) *Collection[T] {
 	return &d
 }
 
+// NewFromStringMap creates a new Collection from a map with string keys
+func NewFromStringMap[T any](m map[string]T) *Collection[T] {
+	var values []T
+	for _, v := range m {
+		values = append(values, v)
+	}
+	return NewFromSlice(values)
+}
+
 // Where filters the collection to only elements satisfying the predicate function
 func (c *Collection[T]) Where(f func(x T) bool) *Collection[T] {
 	return New[T](iter.Seq[T](func(yield func(T) bool) {
@@ -514,6 +523,15 @@ func (c *Collection[T]) Slice() []T {
 		val = append(val, t)
 	}
 	return val
+}
+
+// StringMap converts the collection to a map with string keys
+func (c *Collection[T]) StringMap(keySelector func(x T) string) map[string]T {
+	m := make(map[string]T)
+	for v := range *c {
+		m[keySelector(v)] = v
+	}
+	return m
 }
 
 type AverageTypes interface {

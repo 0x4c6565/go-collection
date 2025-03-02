@@ -97,6 +97,7 @@ for category, group := range groups {
 - `New[T any, I iter.Seq[T] | []T](seq I) *Collection[T]` - Create a collection from an iterator or slice
 - `NewFromIterator[T any](s iter.Seq[T]) *Collection[T]` - Create a collection from an iterator
 - `NewFromSlice[T any](s []T) *Collection[T]` - Create a collection from a slice
+- `NewFromStringMap[T any](m map[string]T) *Collection[T]` - Create a collection from a string map
 
 ### Filtering and Projection
 
@@ -167,6 +168,7 @@ for category, group := range groups {
 ### Conversion
 
 - `Slice() []T` - Convert collection to a slice
+- `StringMap(keySelector func(x T) string) map[string]T` - Convert collection to a map with string keys
 
 ## Error Handling
 
