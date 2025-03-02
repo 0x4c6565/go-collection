@@ -2,6 +2,7 @@ package collection_test
 
 import (
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -1236,6 +1237,48 @@ func TestAggregate(t *testing.T) {
 	})
 }
 
+func TestZip(t *testing.T) {
+	t.Run("EqualLength", func(t *testing.T) {
+		c1 := collection.NewFromSlice([]int{1, 2, 3})
+		c2 := collection.NewFromSlice([]string{"a", "b", "c"})
+
+		result := collection.Zip(c1, c2, func(a int, b string) string {
+			return strconv.Itoa(a) + b
+		}).Slice()
+
+		assert.Equal(t, 3, len(result))
+		assert.Equal(t, "1a", result[0])
+		assert.Equal(t, "2b", result[1])
+		assert.Equal(t, "3c", result[2])
+	})
+
+	t.Run("FirstShorter", func(t *testing.T) {
+		c1 := collection.NewFromSlice([]int{1, 2})
+		c2 := collection.NewFromSlice([]string{"a", "b", "c"})
+
+		result := collection.Zip(c1, c2, func(a int, b string) string {
+			return strconv.Itoa(a) + b
+		}).Slice()
+
+		assert.Equal(t, 2, len(result))
+		assert.Equal(t, "1a", result[0])
+		assert.Equal(t, "2b", result[1])
+	})
+
+	t.Run("SecondShorter", func(t *testing.T) {
+		c1 := collection.NewFromSlice([]int{1, 2, 3})
+		c2 := collection.NewFromSlice([]string{"a", "b"})
+
+		result := collection.Zip(c1, c2, func(a int, b string) string {
+			return strconv.Itoa(a) + b
+		}).Slice()
+
+		assert.Equal(t, 2, len(result))
+		assert.Equal(t, "1a", result[0])
+		assert.Equal(t, "2b", result[1])
+	})
+}
+
 func TestSlice(t *testing.T) {
 	c := collection.NewFromSlice([]string{"a", "b", "c"})
 	v := c.Slice()
@@ -1244,7 +1287,7 @@ func TestSlice(t *testing.T) {
 }
 
 func TestAverage(t *testing.T) {
-	t.Run("uint", func(t *testing.T) {
+	t.Run("Uint", func(t *testing.T) {
 		c := collection.NewFromSlice([]uint{1, 2, 3})
 		v := collection.Average(c)
 		f, _ := v.Float64()
@@ -1252,7 +1295,7 @@ func TestAverage(t *testing.T) {
 		assert.Equal(t, 2.0, f)
 	})
 
-	t.Run("uint8", func(t *testing.T) {
+	t.Run("Uint8", func(t *testing.T) {
 		c := collection.NewFromSlice([]uint8{1, 2, 3})
 		v := collection.Average(c)
 		f, _ := v.Float64()
@@ -1260,7 +1303,7 @@ func TestAverage(t *testing.T) {
 		assert.Equal(t, 2.0, f)
 	})
 
-	t.Run("uint16", func(t *testing.T) {
+	t.Run("Uint16", func(t *testing.T) {
 		c := collection.NewFromSlice([]uint16{1, 2, 3})
 		v := collection.Average(c)
 		f, _ := v.Float64()
@@ -1268,7 +1311,7 @@ func TestAverage(t *testing.T) {
 		assert.Equal(t, 2.0, f)
 	})
 
-	t.Run("uint32", func(t *testing.T) {
+	t.Run("Uint32", func(t *testing.T) {
 		c := collection.NewFromSlice([]uint32{1, 2, 3})
 		v := collection.Average(c)
 		f, _ := v.Float64()
@@ -1276,7 +1319,7 @@ func TestAverage(t *testing.T) {
 		assert.Equal(t, 2.0, f)
 	})
 
-	t.Run("uint64", func(t *testing.T) {
+	t.Run("Uint64", func(t *testing.T) {
 		c := collection.NewFromSlice([]uint64{1, 2, 3})
 		v := collection.Average(c)
 		f, _ := v.Float64()
@@ -1284,7 +1327,7 @@ func TestAverage(t *testing.T) {
 		assert.Equal(t, 2.0, f)
 	})
 
-	t.Run("int", func(t *testing.T) {
+	t.Run("Int", func(t *testing.T) {
 		c := collection.NewFromSlice([]int{1, 2, 3})
 		v := collection.Average(c)
 		f, _ := v.Float64()
@@ -1292,7 +1335,7 @@ func TestAverage(t *testing.T) {
 		assert.Equal(t, 2.0, f)
 	})
 
-	t.Run("int8", func(t *testing.T) {
+	t.Run("Int8", func(t *testing.T) {
 		c := collection.NewFromSlice([]int8{1, 2, 3})
 		v := collection.Average(c)
 		f, _ := v.Float64()
@@ -1300,7 +1343,7 @@ func TestAverage(t *testing.T) {
 		assert.Equal(t, 2.0, f)
 	})
 
-	t.Run("int16", func(t *testing.T) {
+	t.Run("Int16", func(t *testing.T) {
 		c := collection.NewFromSlice([]int16{1, 2, 3})
 		v := collection.Average(c)
 		f, _ := v.Float64()
@@ -1308,7 +1351,7 @@ func TestAverage(t *testing.T) {
 		assert.Equal(t, 2.0, f)
 	})
 
-	t.Run("int32", func(t *testing.T) {
+	t.Run("Int32", func(t *testing.T) {
 		c := collection.NewFromSlice([]int32{1, 2, 3})
 		v := collection.Average(c)
 		f, _ := v.Float64()
@@ -1316,7 +1359,7 @@ func TestAverage(t *testing.T) {
 		assert.Equal(t, 2.0, f)
 	})
 
-	t.Run("int64", func(t *testing.T) {
+	t.Run("Int64", func(t *testing.T) {
 		c := collection.NewFromSlice([]int64{1, 2, 3})
 		v := collection.Average(c)
 		f, _ := v.Float64()
@@ -1324,7 +1367,7 @@ func TestAverage(t *testing.T) {
 		assert.Equal(t, 2.0, f)
 	})
 
-	t.Run("float32", func(t *testing.T) {
+	t.Run("Float32", func(t *testing.T) {
 		c := collection.NewFromSlice([]float32{1.0, 2.0, 3.0})
 		v := collection.Average(c)
 		f, _ := v.Float64()
@@ -1332,7 +1375,7 @@ func TestAverage(t *testing.T) {
 		assert.Equal(t, 2.0, f)
 	})
 
-	t.Run("float64", func(t *testing.T) {
+	t.Run("Float64", func(t *testing.T) {
 		c := collection.NewFromSlice([]float64{1.0, 2.0, 3.0})
 		v := collection.Average(c)
 		f, _ := v.Float64()
@@ -1342,7 +1385,7 @@ func TestAverage(t *testing.T) {
 }
 
 func TestSum(t *testing.T) {
-	t.Run("uint", func(t *testing.T) {
+	t.Run("Uint", func(t *testing.T) {
 		c := collection.NewFromSlice([]uint{1, 2, 3})
 		v := collection.Sum(c)
 		f, _ := v.Float64()
@@ -1350,7 +1393,7 @@ func TestSum(t *testing.T) {
 		assert.Equal(t, 6.0, f)
 	})
 
-	t.Run("uint8", func(t *testing.T) {
+	t.Run("Uint8", func(t *testing.T) {
 		c := collection.NewFromSlice([]uint8{1, 2, 3})
 		v := collection.Sum(c)
 		f, _ := v.Float64()
@@ -1358,7 +1401,7 @@ func TestSum(t *testing.T) {
 		assert.Equal(t, 6.0, f)
 	})
 
-	t.Run("uint16", func(t *testing.T) {
+	t.Run("Uint16", func(t *testing.T) {
 		c := collection.NewFromSlice([]uint16{1, 2, 3})
 		v := collection.Sum(c)
 		f, _ := v.Float64()
@@ -1366,7 +1409,7 @@ func TestSum(t *testing.T) {
 		assert.Equal(t, 6.0, f)
 	})
 
-	t.Run("uint32", func(t *testing.T) {
+	t.Run("Uint32", func(t *testing.T) {
 		c := collection.NewFromSlice([]uint32{1, 2, 3})
 		v := collection.Sum(c)
 		f, _ := v.Float64()
@@ -1374,7 +1417,7 @@ func TestSum(t *testing.T) {
 		assert.Equal(t, 6.0, f)
 	})
 
-	t.Run("uint64", func(t *testing.T) {
+	t.Run("Uint64", func(t *testing.T) {
 		c := collection.NewFromSlice([]uint64{1, 2, 3})
 		v := collection.Sum(c)
 		f, _ := v.Float64()
@@ -1382,7 +1425,7 @@ func TestSum(t *testing.T) {
 		assert.Equal(t, 6.0, f)
 	})
 
-	t.Run("int", func(t *testing.T) {
+	t.Run("Int", func(t *testing.T) {
 		c := collection.NewFromSlice([]int{1, 2, 3})
 		v := collection.Sum(c)
 		f, _ := v.Float64()
@@ -1390,7 +1433,7 @@ func TestSum(t *testing.T) {
 		assert.Equal(t, 6.0, f)
 	})
 
-	t.Run("int8", func(t *testing.T) {
+	t.Run("Int8", func(t *testing.T) {
 		c := collection.NewFromSlice([]int8{1, 2, 3})
 		v := collection.Sum(c)
 		f, _ := v.Float64()
@@ -1398,7 +1441,7 @@ func TestSum(t *testing.T) {
 		assert.Equal(t, 6.0, f)
 	})
 
-	t.Run("int16", func(t *testing.T) {
+	t.Run("Int16", func(t *testing.T) {
 		c := collection.NewFromSlice([]int16{1, 2, 3})
 		v := collection.Sum(c)
 		f, _ := v.Float64()
@@ -1406,7 +1449,7 @@ func TestSum(t *testing.T) {
 		assert.Equal(t, 6.0, f)
 	})
 
-	t.Run("int32", func(t *testing.T) {
+	t.Run("Int32", func(t *testing.T) {
 		c := collection.NewFromSlice([]int32{1, 2, 3})
 		v := collection.Sum(c)
 		f, _ := v.Float64()
@@ -1414,7 +1457,7 @@ func TestSum(t *testing.T) {
 		assert.Equal(t, 6.0, f)
 	})
 
-	t.Run("int64", func(t *testing.T) {
+	t.Run("Int64", func(t *testing.T) {
 		c := collection.NewFromSlice([]int64{1, 2, 3})
 		v := collection.Sum(c)
 		f, _ := v.Float64()
@@ -1422,7 +1465,7 @@ func TestSum(t *testing.T) {
 		assert.Equal(t, 6.0, f)
 	})
 
-	t.Run("float32", func(t *testing.T) {
+	t.Run("Float32", func(t *testing.T) {
 		c := collection.NewFromSlice([]float32{1.0, 2.0, 3.0})
 		v := collection.Sum(c)
 		f, _ := v.Float64()
@@ -1430,7 +1473,7 @@ func TestSum(t *testing.T) {
 		assert.Equal(t, 6.0, f)
 	})
 
-	t.Run("float64", func(t *testing.T) {
+	t.Run("Float64", func(t *testing.T) {
 		c := collection.NewFromSlice([]float64{1.0, 2.0, 3.0})
 		v := collection.Sum(c)
 		f, _ := v.Float64()
@@ -1440,7 +1483,7 @@ func TestSum(t *testing.T) {
 }
 
 func TestSumInt(t *testing.T) {
-	t.Run("uint", func(t *testing.T) {
+	t.Run("Uint", func(t *testing.T) {
 		c := collection.NewFromSlice([]uint{1, 2, 3})
 		v := collection.SumInt(c)
 		f := v.Int64()
@@ -1448,7 +1491,7 @@ func TestSumInt(t *testing.T) {
 		assert.Equal(t, int64(6), f)
 	})
 
-	t.Run("uint8", func(t *testing.T) {
+	t.Run("Uint8", func(t *testing.T) {
 		c := collection.NewFromSlice([]uint8{1, 2, 3})
 		v := collection.SumInt(c)
 		f := v.Int64()
@@ -1456,7 +1499,7 @@ func TestSumInt(t *testing.T) {
 		assert.Equal(t, int64(6), f)
 	})
 
-	t.Run("uint16", func(t *testing.T) {
+	t.Run("Uint16", func(t *testing.T) {
 		c := collection.NewFromSlice([]uint16{1, 2, 3})
 		v := collection.SumInt(c)
 		f := v.Int64()
@@ -1464,7 +1507,7 @@ func TestSumInt(t *testing.T) {
 		assert.Equal(t, int64(6), f)
 	})
 
-	t.Run("uint32", func(t *testing.T) {
+	t.Run("Uint32", func(t *testing.T) {
 		c := collection.NewFromSlice([]uint32{1, 2, 3})
 		v := collection.SumInt(c)
 		f := v.Int64()
@@ -1472,7 +1515,7 @@ func TestSumInt(t *testing.T) {
 		assert.Equal(t, int64(6), f)
 	})
 
-	t.Run("int", func(t *testing.T) {
+	t.Run("Int", func(t *testing.T) {
 		c := collection.NewFromSlice([]int{1, 2, 3})
 		v := collection.SumInt(c)
 		f := v.Int64()
@@ -1480,7 +1523,7 @@ func TestSumInt(t *testing.T) {
 		assert.Equal(t, int64(6), f)
 	})
 
-	t.Run("int8", func(t *testing.T) {
+	t.Run("Int8", func(t *testing.T) {
 		c := collection.NewFromSlice([]int8{1, 2, 3})
 		v := collection.SumInt(c)
 		f := v.Int64()
@@ -1488,7 +1531,7 @@ func TestSumInt(t *testing.T) {
 		assert.Equal(t, int64(6), f)
 	})
 
-	t.Run("int16", func(t *testing.T) {
+	t.Run("Int16", func(t *testing.T) {
 		c := collection.NewFromSlice([]int16{1, 2, 3})
 		v := collection.SumInt(c)
 		f := v.Int64()
@@ -1496,7 +1539,7 @@ func TestSumInt(t *testing.T) {
 		assert.Equal(t, int64(6), f)
 	})
 
-	t.Run("int32", func(t *testing.T) {
+	t.Run("Int32", func(t *testing.T) {
 		c := collection.NewFromSlice([]int32{1, 2, 3})
 		v := collection.SumInt(c)
 		f := v.Int64()

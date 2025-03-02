@@ -467,6 +467,46 @@ func (c *Collection[T]) Aggregate(seed any, accumulator func(result any, item T)
 	return result
 }
 
+// Zip combines two collections into one by applying a function pairwise
+func Zip[T1, T2, TResult any](c1 *Collection[T1], c2 *Collection[T2], zipper func(T1, T2) TResult) *Collection[TResult] {
+	return New[TResult](iter.Seq[TResult](func(yield func(TResult) bool) {
+		iter1 := make(chan T1)
+		iter2 := make(chan T2)
+
+		// Start goroutines to generate values
+		go func() {
+			defer close(iter1)
+			for v := range *c1 {
+				iter1 <- v
+			}
+		}()
+
+		go func() {
+			defer close(iter2)
+			for v := range *c2 {
+				iter2 <- v
+			}
+		}()
+
+		// Zip elements together
+		for {
+			v1, ok1 := <-iter1
+			if !ok1 {
+				break
+			}
+
+			v2, ok2 := <-iter2
+			if !ok2 {
+				break
+			}
+
+			if !yield(zipper(v1, v2)) {
+				return
+			}
+		}
+	}))
+}
+
 // Slice converts the collection to a slice
 func (c *Collection[T]) Slice() []T {
 	var val []T

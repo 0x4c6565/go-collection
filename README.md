@@ -103,6 +103,10 @@ for category, group := range groups {
 - `Select[T any, e any](c *Collection[T], f func(x T) e) *Collection[e]` - Transform elements using a selector function
 - `SelectMany[T any, E any](c *Collection[T], f func(x T) *Collection[E]) *Collection[E]` - Project and flatten collections
 
+### Aggregation
+
+- `Zip[T1, T2, TResult any](c1 *Collection[T1], c2 *Collection[T2], zipper func(T1, T2) TResult) *Collection[TResult]` - Combines two collections into one by applying a function pairwise
+
 ### Numeric Operations
 
 - `Average[T AverageTypes](c *Collection[T]) *big.Float` - Calculate average of numeric collection
