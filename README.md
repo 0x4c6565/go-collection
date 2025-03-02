@@ -142,7 +142,8 @@ for category, group := range groups {
 - `FirstOrError() (T, error)` - Get the first element or error
 - `Last() (T, bool)` - Get the last element or false
 - `LastOrError() (T, error)` - Get the last element or error
-- `ElementAt(index int) (T, error)` Get the element at index or error
+- `ElementAt(index int) (T, bool)` - Get the element at index or false
+- `ElementAtOrError(index int) (T, error)` - Get the element at index or error
 
 ### Boolean Operations
 
@@ -171,6 +172,7 @@ for category, group := range groups {
 - `Slice() []T` - Convert collection to a slice
 - `StringMap(keySelector func(x T) string) map[string]T` - Convert collection to a map with string keys
 
-## Error Handling
+## Errors
 
-The package provides the `ErrNoElement` error which is returned when operations like `FirstOrError` or `LastOrError` are called on empty collections.
+- `ErrNoElement` - Returned when methods like `FirstOrError` or `LastOrError` are called on empty collections
+- `ErrIndexOutOfRange` - Returned when methods like `ElementAtOrError` are called with out of bound indexes

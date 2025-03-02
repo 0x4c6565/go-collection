@@ -9,6 +9,7 @@ import (
 )
 
 var ErrNoElement = errors.New("no element")
+var ErrIndexOutOfRange = errors.New("index out of range")
 
 type Collection[T any] func(yield func(T) bool)
 
@@ -516,20 +517,28 @@ func Zip[T1, T2, TResult any](c1 *Collection[T1], c2 *Collection[T2], zipper fun
 	}))
 }
 
-func (c *Collection[T]) ElementAt(index int) (T, error) {
+func (c *Collection[T]) ElementAt(index int) (T, bool) {
 	var d T
 	if index < 0 {
-		return d, errors.New("index must be non-negative")
+		return d, false
 	}
 
 	count := 0
 	for v := range *c {
 		if count == index {
-			return v, nil
+			return v, true
 		}
 		count++
 	}
-	return d, errors.New("index out of range")
+	return d, false
+}
+
+func (c *Collection[T]) ElementAtOrError(index int) (T, error) {
+	val, ok := c.ElementAt(index)
+	if !ok {
+		return val, ErrIndexOutOfRange
+	}
+	return val, nil
 }
 
 // Slice converts the collection to a slice

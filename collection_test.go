@@ -1292,9 +1292,33 @@ func TestZip(t *testing.T) {
 
 func TestElementAt(t *testing.T) {
 	t.Run("Valid", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c"})
+		v, ok := c.ElementAt(0)
+
+		assert.True(t, ok)
+		assert.Equal(t, "a", v)
+	})
+
+	t.Run("LessThanZero", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c"})
+		_, ok := c.ElementAt(-1)
+
+		assert.False(t, ok)
+	})
+
+	t.Run("OutOfBounds", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c"})
+		_, ok := c.ElementAt(3)
+
+		assert.False(t, ok)
+	})
+}
+
+func TestElementAtOrError(t *testing.T) {
+	t.Run("Valid", func(t *testing.T) {
 
 		c := collection.NewFromSlice([]string{"a", "b", "c"})
-		v, err := c.ElementAt(0)
+		v, err := c.ElementAtOrError(0)
 
 		assert.Nil(t, err)
 		assert.Equal(t, "a", v)
@@ -1302,14 +1326,14 @@ func TestElementAt(t *testing.T) {
 
 	t.Run("LessThanZero", func(t *testing.T) {
 		c := collection.NewFromSlice([]string{"a", "b", "c"})
-		_, err := c.ElementAt(-1)
+		_, err := c.ElementAtOrError(-1)
 
 		assert.NotNil(t, err)
 	})
 
 	t.Run("OutOfBounds", func(t *testing.T) {
 		c := collection.NewFromSlice([]string{"a", "b", "c"})
-		_, err := c.ElementAt(3)
+		_, err := c.ElementAtOrError(3)
 
 		assert.NotNil(t, err)
 	})
