@@ -17,78 +17,53 @@ The `collection` package provides a generic way to work with collections of data
 ### Basic Filtering and Transformation
 
 ```go
-package main
+// Create a new collection from a slice
+numbers := collection.NewFromSlice([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
 
-import (
-	"fmt"
-	"github.com/0x4c6565/go-collection"
-)
+// Filter, transform, and compute
+result := numbers.
+	Where(func(x int) bool { return x % 2 == 0 }). // Get even numbers
+	Select(func(x int) any { return x * x }).      // Square each number
+	Slice()                                        // Convert to slice
 
-func main() {
-	// Create a new collection from a slice
-	numbers := collection.NewFromSlice([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
-	
-	// Filter, transform, and compute
-	result := numbers.
-		Where(func(x int) bool { return x % 2 == 0 }). // Get even numbers
-		Select(func(x int) any { return x * x }).      // Square each number
-		Slice()                                        // Convert to slice
-	
-	fmt.Println(result) // Output: [4, 16, 36, 64, 100]
-}
+fmt.Println(result) // Output: [4, 16, 36, 64, 100]
 ```
 
 ### Working with Structs
 
 ```go
-package main
-
-import (
-	"fmt"
-	"github.com/0x4c6565/go-collection"
-)
-
 type Person struct {
 	Name string
 	Age  int
 }
 
-func main() {
-	people := collection.NewFromSlice([]Person{
-		{Name: "Alice", Age: 25},
-		{Name: "Bob", Age: 30},
-		{Name: "Charlie", Age: 22},
-		{Name: "Lucy", Age: 17},
-		{Name: "Dave", Age: 35},
-	})
-	
-	// Find adults and order them by age
-	adults := people.
-		Where(func(p Person) bool { return p.Age >= 18 }).
-		OrderBy(func(p Person) any { return p.Age }, true) // Ascending order
-	
-	for _, person := range *adults {
-		fmt.Printf("%s: %d years old\n", person.Name, person.Age)
-	}
-    
-	// Output:
-	// Charlie: 22 years old
-	// Alice: 25 years old
-	// Bob: 30 years old
-	// Dave: 35 years old
+people := collection.NewFromSlice([]Person{
+	{Name: "Alice", Age: 25},
+	{Name: "Bob", Age: 30},
+	{Name: "Charlie", Age: 22},
+	{Name: "Lucy", Age: 17},
+	{Name: "Dave", Age: 35},
+})
+
+// Find adults and order them by age
+adults := people.
+	Where(func(p Person) bool { return p.Age >= 18 }).
+	OrderBy(func(p Person) any { return p.Age }, true) // Ascending order
+
+for _, person := range *adults {
+	fmt.Printf("%s: %d years old\n", person.Name, person.Age)
 }
+
+// Output:
+// Charlie: 22 years old
+// Alice: 25 years old
+// Bob: 30 years old
+// Dave: 35 years old
 ```
 
 ### Grouping and Aggregation
 
 ```go
-package main
-
-import (
-	"fmt"
-	"github.com/0x4c6565/go-collection"
-)
-
 type Product struct {
 	Name     string
 	Category string
@@ -109,6 +84,10 @@ for category, group := range groups {
 	avg := collection.Average(collection.Select(group, func(p Product) float64 { return p.Price }))
 	fmt.Printf("Category: %s, Average Price: £%.2f\n", category, avg)
 }
+
+// Output:
+// Category: Fruit, Average Price: £1.49
+// Category: Vegetable, Average Price: £0.62
 ```
 
 ## Available Functions
@@ -129,7 +108,8 @@ for category, group := range groups {
 - `Average[T AverageTypes](c *Collection[T]) *big.Float` - Calculate average of numeric collection
 - `Sum[T SumTypes](c *Collection[T]) *big.Float` - Calculate sum of numeric collection
 - `SumInt[T SumIntTypes](c *Collection[T]) *big.Int` - Calculate sum of integer collection
-- `Max[T numericalTypes](c *Collection[T]) T` - Calculate the largest value in the numberic collection
+- `Min[T numericalTypes](c *Collection[T]) T` - Calculate the smallest value in the numeric
+- `Max[T numericalTypes](c *Collection[T]) T` - Calculate the largest value in the numeric collection
 
 ## Available Collection Methods
 
