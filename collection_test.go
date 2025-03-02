@@ -1145,6 +1145,49 @@ func TestReverse(t *testing.T) {
 	assert.Equal(t, "a", result[2])
 }
 
+func TestAppend(t *testing.T) {
+	c := collection.NewFromSlice([]string{"a", "b", "c"})
+	result := c.Append("d").Slice()
+
+	assert.Equal(t, 4, len(result))
+	assert.Equal(t, "a", result[0])
+	assert.Equal(t, "b", result[1])
+	assert.Equal(t, "c", result[2])
+	assert.Equal(t, "d", result[3])
+}
+
+func TestPrepend(t *testing.T) {
+	c := collection.NewFromSlice([]string{"a", "b", "c"})
+	result := c.Prepend("d").Slice()
+
+	assert.Equal(t, 4, len(result))
+	assert.Equal(t, "d", result[0])
+	assert.Equal(t, "a", result[1])
+	assert.Equal(t, "b", result[2])
+	assert.Equal(t, "c", result[3])
+}
+
+func TestChunk(t *testing.T) {
+	c := collection.NewFromSlice([]string{"a", "b", "c", "d", "e", "f", "g", "h"})
+	result := c.Chunk(3)
+
+	assert.Equal(t, 3, len(result))
+
+	assert.Equal(t, 3, len(result[0].Slice()))
+	assert.Equal(t, "a", result[0].Slice()[0])
+	assert.Equal(t, "b", result[0].Slice()[1])
+	assert.Equal(t, "c", result[0].Slice()[2])
+
+	assert.Equal(t, 3, len(result[1].Slice()))
+	assert.Equal(t, "d", result[1].Slice()[0])
+	assert.Equal(t, "e", result[1].Slice()[1])
+	assert.Equal(t, "f", result[1].Slice()[2])
+
+	assert.Equal(t, 2, len(result[2].Slice()))
+	assert.Equal(t, "g", result[2].Slice()[0])
+	assert.Equal(t, "h", result[2].Slice()[1])
+}
+
 func TestSlice(t *testing.T) {
 	c := collection.NewFromSlice([]string{"a", "b", "c"})
 	v := c.Slice()

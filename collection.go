@@ -410,6 +410,54 @@ func (c *Collection[T]) Reverse() *Collection[T] {
 	return NewFromSlice(slice)
 }
 
+// Append adds an element to the end of the collection
+func (c *Collection[T]) Append(e T) *Collection[T] {
+	return New[T](iter.Seq[T](func(yield func(T) bool) {
+		for v := range *c {
+			if !yield(v) {
+				return
+			}
+		}
+		if !yield(e) {
+			return
+		}
+	}))
+}
+
+// Prepend adds an element to the beginning of the collection
+func (c *Collection[T]) Prepend(e T) *Collection[T] {
+	return New[T](iter.Seq[T](func(yield func(T) bool) {
+		if !yield(e) {
+			return
+		}
+		for v := range *c {
+			if !yield(v) {
+				return
+			}
+		}
+	}))
+}
+
+// Chunk splits the collection into chunks of the specified size
+func (c *Collection[T]) Chunk(size int) []*Collection[T] {
+	chunks := make([]*Collection[T], 0)
+	chunk := make([]T, 0)
+
+	for v := range *c {
+		chunk = append(chunk, v)
+		if len(chunk) == size {
+			chunks = append(chunks, NewFromSlice(chunk))
+			chunk = make([]T, 0)
+		}
+	}
+
+	if len(chunk) > 0 {
+		chunks = append(chunks, NewFromSlice(chunk))
+	}
+
+	return chunks
+}
+
 // Slice converts the collection to a slice
 func (c *Collection[T]) Slice() []T {
 	var val []T

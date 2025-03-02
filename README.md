@@ -150,11 +150,14 @@ for category, group := range groups {
 - `Intersect(other *Collection[T], equals func(a, b T) bool) *Collection[T]` - Intersection of collections
 - `Except(other *Collection[T], equals func(a, b T) bool) *Collection[T]` - Difference of collections
 - `Concat(other *Collection[T]) *Collection[T]` - Concatenate collections
+- `Append(e T) *Collection[T]` - Add element to the end of the collection
+- `Prepend(e T) *Collection[T]` - Add element to the beginning of the collection
 
 ### Aggregation
 
 - `Count() int` - Count elements in the collection
 - `GroupBy(keySelector func(x T) any) map[any]*Collection[T]` - Group elements by key
+- `Chunk(size int) []*Collection[T]` Split collection into chunks of the specified size
 
 ### Conversion
 
