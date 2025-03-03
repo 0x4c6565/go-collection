@@ -259,11 +259,7 @@ type NumericalTypes interface {
 	uint | uint8 | uint16 | uint32 | uint64 | int | int8 | int16 | int32 | int64 | float32 | float64
 }
 
-type orderByNumbericalTypes interface {
-	NumericalTypes
-}
-
-func orderByNumerical[T orderByNumbericalTypes](a T, b T, ascending bool) int {
+func orderByNumerical[T NumericalTypes](a T, b T, ascending bool) int {
 	if ascending {
 		if a < b {
 			return -1
