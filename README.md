@@ -107,13 +107,14 @@ for category, group := range groups {
 ### Aggregation
 
 - `Zip[T1, T2, TResult any](c1 *Collection[T1], c2 *Collection[T2], zipper func(T1, T2) TResult) *Collection[TResult]` - Combines two collections into one by applying a function pairwise
+- `Join[TOuter, TInner, TKey comparable, TResult any](outer *Collection[TOuter], inner *Collection[TInner], outerKeySelector func(TOuter) TKey, innerKeySelector func(TInner) TKey, resultSelector func(TOuter, TInner) TResult) *Collection[TResult]` - Performs an inner join on two collections based on matching keys
 
 ### Numeric Operations
 
 - `Average[T AverageTypes](c *Collection[T]) *big.Float` - Calculate average of numeric collection
 - `Sum[T SumTypes](c *Collection[T]) *big.Float` - Calculate sum of numeric collection
 - `SumInt[T SumIntTypes](c *Collection[T]) *big.Int` - Calculate sum of integer collection
-- `Min[T NumericalTypes](c *Collection[T]) T` - Calculate the smallest value in the numeric
+- `Min[T NumericalTypes](c *Collection[T]) T` - Calculate the smallest value in the numeric collection
 - `Max[T NumericalTypes](c *Collection[T]) T` - Calculate the largest value in the numeric collection
 
 ## Available Collection Methods

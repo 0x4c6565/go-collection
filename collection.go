@@ -541,6 +541,27 @@ func (c *Collection[T]) ElementAtOrError(index int) (T, error) {
 	return val, nil
 }
 
+// Join performs an inner join on two collections based on matching keys
+func Join[TOuter, TInner, TKey comparable, TResult any](outer *Collection[TOuter], inner *Collection[TInner], outerKeySelector func(TOuter) TKey, innerKeySelector func(TInner) TKey, resultSelector func(TOuter, TInner) TResult) *Collection[TResult] {
+	return New[TResult](iter.Seq[TResult](func(yield func(TResult) bool) {
+		innerSlice := inner.Slice()
+
+		for outerItem := range *outer {
+			outerKey := outerKeySelector(outerItem)
+
+			for _, innerItem := range innerSlice {
+				innerKey := innerKeySelector(innerItem)
+
+				if outerKey == innerKey {
+					if !yield(resultSelector(outerItem, innerItem)) {
+						return
+					}
+				}
+			}
+		}
+	}))
+}
+
 // Slice converts the collection to a slice
 func (c *Collection[T]) Slice() []T {
 	var val []T

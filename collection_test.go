@@ -1,6 +1,7 @@
 package collection_test
 
 import (
+	"fmt"
 	"slices"
 	"strconv"
 	"strings"
@@ -1337,6 +1338,70 @@ func TestElementAtOrError(t *testing.T) {
 
 		assert.NotNil(t, err)
 	})
+}
+
+func TestJoin(t *testing.T) {
+	type testPerson struct {
+		ID   int
+		Name string
+		Age  int
+	}
+
+	type testPet struct {
+		OwnerID int
+		Name    string
+		Species string
+	}
+
+	// Setup
+	people := collection.NewFromSlice([]testPerson{
+		{1, "Alice", 30},
+		{2, "Bob", 25},
+		{3, "Charlie", 35},
+	})
+
+	pets := collection.NewFromSlice([]testPet{
+		{1, "Fluffy", "Cat"},
+		{2, "Rex", "Dog"},
+		{1, "Whiskers", "Cat"},
+		{4, "Spike", "Dog"},
+	})
+
+	// Perform join
+	result := collection.Join(
+		people,
+		pets,
+		func(p testPerson) int { return p.ID },
+		func(pet testPet) int { return pet.OwnerID },
+		func(p testPerson, pet testPet) string {
+			return fmt.Sprintf("%s owns %s", p.Name, pet.Name)
+		},
+	).Slice()
+
+	// Verify results
+	expected := []string{
+		"Alice owns Fluffy",
+		"Alice owns Whiskers",
+		"Bob owns Rex",
+	}
+
+	if len(result) != len(expected) {
+		t.Errorf("Expected %d results, got %d", len(expected), len(result))
+	}
+
+	// Check that all expected results are present
+	for _, exp := range expected {
+		found := false
+		for _, res := range result {
+			if res == exp {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Expected result not found: %s", exp)
+		}
+	}
 }
 
 func TestSlice(t *testing.T) {
