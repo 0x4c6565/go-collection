@@ -580,12 +580,8 @@ func (c *Collection[T]) StringMap(keySelector func(x T) string) map[string]T {
 	return m
 }
 
-type AverageTypes interface {
-	uint | uint8 | uint16 | uint32 | uint64 | int | int8 | int16 | int32 | int64 | float32 | float64
-}
-
 // Average calculates the average value of a numeric collection
-func Average[T AverageTypes](c *Collection[T]) *big.Float {
+func Average[T NumericalTypes](c *Collection[T]) *big.Float {
 	sum := float64(0)
 	count := 0
 	for t := range *c {
@@ -595,34 +591,13 @@ func Average[T AverageTypes](c *Collection[T]) *big.Float {
 	return big.NewFloat(sum / float64(count))
 }
 
-type SumFloatTypes interface {
-	float32 | float64
-}
-
-type SumIntTypes interface {
-	uint | uint8 | uint16 | uint32 | uint64 | int | int8 | int16 | int32 | int64
-}
-
-type SumTypes interface {
-	SumIntTypes | SumFloatTypes
-}
-
 // Sum calculates the sum of all elements in the collection and returns it as a big.Float
-func Sum[T SumTypes](c *Collection[T]) *big.Float {
+func Sum[T NumericalTypes](c *Collection[T]) *big.Float {
 	sum := float64(0)
 	for t := range *c {
 		sum += float64(t)
 	}
 	return big.NewFloat(sum)
-}
-
-// SumInt calculates the sum of all integer elements in the collection and returns it as a big.Int
-func SumInt[T SumIntTypes](c *Collection[T]) *big.Int {
-	sum := int64(0)
-	for t := range *c {
-		sum += int64(t)
-	}
-	return big.NewInt(sum)
 }
 
 func Min[T NumericalTypes](c *Collection[T]) T {

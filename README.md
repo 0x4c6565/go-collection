@@ -111,9 +111,8 @@ for category, group := range groups {
 
 ### Numeric Operations
 
-- `Average[T AverageTypes](c *Collection[T]) *big.Float` - Calculate average of numeric collection
-- `Sum[T SumTypes](c *Collection[T]) *big.Float` - Calculate sum of numeric collection
-- `SumInt[T SumIntTypes](c *Collection[T]) *big.Int` - Calculate sum of integer collection
+- `Average[T NumericalTypes](c *Collection[T]) *big.Float` - Calculate average of numeric collection
+- `Sum[T NumericalTypes](c *Collection[T]) *big.Float` - Calculate sum of numeric collection
 - `Min[T NumericalTypes](c *Collection[T]) T` - Calculate the smallest value in the numeric collection
 - `Max[T NumericalTypes](c *Collection[T]) T` - Calculate the largest value in the numeric collection
 
