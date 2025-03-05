@@ -459,6 +459,49 @@ func TestSkipUntil(t *testing.T) {
 	})
 }
 
+func TestSkipLast(t *testing.T) {
+	t.Run("SkipSome", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c", "d", "e"})
+		result := c.SkipLast(2).Slice()
+
+		assert.Equal(t, 3, len(result))
+		assert.Equal(t, "a", result[0])
+		assert.Equal(t, "b", result[1])
+		assert.Equal(t, "c", result[2])
+	})
+
+	t.Run("SkipAll", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c"})
+		result := c.SkipLast(3).Slice()
+
+		assert.Equal(t, 0, len(result))
+	})
+
+	t.Run("SkipMore", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c"})
+		result := c.SkipLast(5).Slice()
+
+		assert.Equal(t, 0, len(result))
+	})
+
+	t.Run("SkipZero", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c"})
+		result := c.SkipLast(0).Slice()
+
+		assert.Equal(t, 3, len(result))
+		assert.Equal(t, "a", result[0])
+		assert.Equal(t, "b", result[1])
+		assert.Equal(t, "c", result[2])
+	})
+
+	t.Run("Break", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c", "d", "e"})
+		for range *c.SkipLast(2) {
+			break
+		}
+	})
+}
+
 func TestTake(t *testing.T) {
 	t.Run("TakeSome", func(t *testing.T) {
 		c := collection.NewFromSlice([]string{"a", "b", "c", "d", "e"})
@@ -579,6 +622,46 @@ func TestTakeWhile(t *testing.T) {
 		for range *c.TakeWhile(func(x int) bool {
 			return x < 5
 		}) {
+			break
+		}
+	})
+}
+
+func TestTakeLast(t *testing.T) {
+	t.Run("TakeSome", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c", "d", "e"})
+		result := c.TakeLast(3).Slice()
+
+		assert.Equal(t, 3, len(result))
+		assert.Equal(t, "c", result[0])
+		assert.Equal(t, "d", result[1])
+		assert.Equal(t, "e", result[2])
+	})
+
+	t.Run("TakeAll", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c"})
+		result := c.TakeLast(3).Slice()
+
+		assert.Equal(t, 3, len(result))
+	})
+
+	t.Run("TakeMore", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c"})
+		result := c.TakeLast(5).Slice()
+
+		assert.Equal(t, 3, len(result))
+	})
+
+	t.Run("TakeZero", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c"})
+		result := c.TakeLast(0).Slice()
+
+		assert.Equal(t, 0, len(result))
+	})
+
+	t.Run("Break", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c", "d", "e"})
+		for range *c.TakeLast(3) {
 			break
 		}
 	})

@@ -201,6 +201,18 @@ func (c *Collection[T]) SkipWhile(f func(x T) bool) *Collection[T] {
 	}))
 }
 
+// SkipLast returns a collection that skips the last n elements
+func (c *Collection[T]) SkipLast(n int) *Collection[T] {
+	return New[T](iter.Seq[T](func(yield func(T) bool) {
+		slice := c.Slice()
+		for i := 0; i < len(slice)-n; i++ {
+			if !yield(slice[i]) {
+				return
+			}
+		}
+	}))
+}
+
 // Take returns a collection of only the first n elements
 func (c *Collection[T]) Take(n int) *Collection[T] {
 	return New[T](iter.Seq[T](func(yield func(T) bool) {
@@ -239,6 +251,24 @@ func (c *Collection[T]) TakeWhile(f func(x T) bool) *Collection[T] {
 				return
 			}
 			if !yield(v) {
+				return
+			}
+		}
+	}))
+}
+
+// TakeLast returns a collection of only the last n elements
+func (c *Collection[T]) TakeLast(n int) *Collection[T] {
+	return New[T](iter.Seq[T](func(yield func(T) bool) {
+		slice := c.Slice()
+
+		start := len(slice) - n
+		if start < 0 {
+			start = 0
+		}
+
+		for i := start; i < len(slice); i++ {
+			if !yield(slice[i]) {
 				return
 			}
 		}

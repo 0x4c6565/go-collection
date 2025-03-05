@@ -126,9 +126,11 @@ for category, group := range groups {
 - `Take(n int) *Collection[T]` - Get only the first n elements
 - `TakeUntil(f func(x T) bool) *Collection[T]` - Get elements until the predicate is satisfied
 - `TakeWhile(f func(x T) bool) *Collection[T]` - Get elements whilst the predicate is satisfied
+- `TakeLast(n int) *Collection[T]` - Take the last n elements
 - `Skip(n int) *Collection[T]` - Skip the first n elements
 - `SkipUntil(f func(x T) bool) *Collection[T]` - Skip elements until predicate is satisfied
 - `SkipWhile(f func(x T) bool) *Collection[T]` - Skip elements whilst the predicate is satisfied
+- `SkipLast(n int) *Collection[T]` - Skip the last n elements
 - `Distinct(equals func(a, b T) bool) *Collection[T]` - Get only distinct elements
 
 ### Ordering
