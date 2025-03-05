@@ -146,6 +146,7 @@ for category, group := range groups {
 - `LastOrError() (T, error)` - Get the last element or error
 - `ElementAt(index int) (T, bool)` - Get the element at index or false
 - `ElementAtOrError(index int) (T, error)` - Get the element at index or error
+- `ParallelForEach(ctx context.Context, action func(T) error, numWorkers int) error` - Execute action against each element in parallel
 
 ### Boolean Operations
 

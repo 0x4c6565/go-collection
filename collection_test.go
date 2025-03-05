@@ -1,11 +1,14 @@
 package collection_test
 
 import (
+	"context"
 	"fmt"
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	collection "github.com/0x4c6565/go-collection"
 	"github.com/stretchr/testify/assert"
@@ -1330,6 +1333,42 @@ func TestAggregate(t *testing.T) {
 
 		assert.Equal(t, seed, result)
 	})
+}
+
+func TestParallelForEach(t *testing.T) {
+	numbers := collection.NewFromSlice([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
+
+	start := time.Now()
+
+	var results []int
+	var mu sync.Mutex
+
+	err := numbers.ParallelForEach(
+		context.Background(),
+		func(x int) error {
+			time.Sleep(1 * time.Second)
+
+			mu.Lock()
+			results = append(results, x)
+			mu.Unlock()
+			return nil
+		},
+		5,
+	)
+
+	duration := time.Since(start)
+
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	if duration > 3*time.Second {
+		t.Errorf("Expected parallel execution around 2 seconds, got %v", duration)
+	}
+
+	if len(results) != 10 {
+		t.Errorf("Expected 10 results, got %d", len(results))
+	}
 }
 
 func TestZip(t *testing.T) {

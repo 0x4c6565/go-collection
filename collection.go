@@ -1,11 +1,15 @@
 package collection
 
 import (
+	"context"
 	"errors"
 	"iter"
 	"math/big"
+	"runtime"
 	"slices"
 	"strings"
+
+	"golang.org/x/sync/errgroup"
 )
 
 var ErrNoElement = errors.New("no element")
@@ -501,6 +505,30 @@ func (c *Collection[T]) Aggregate(seed any, accumulator func(result any, item T)
 		result = accumulator(result, item)
 	}
 	return result
+}
+
+// ParallelForEach executes an action for each element in the collection in parallel
+func (c *Collection[T]) ParallelForEach(ctx context.Context, action func(T) error, numWorkers int) error {
+	if numWorkers <= 0 {
+		numWorkers = runtime.NumCPU()
+	}
+
+	g, ctx := errgroup.WithContext(ctx)
+	g.SetLimit(numWorkers)
+	slice := c.Slice()
+	for _, item := range slice {
+		currentItem := item
+		g.Go(func() error {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			default:
+				return action(currentItem)
+			}
+		})
+	}
+
+	return g.Wait()
 }
 
 // Zip combines two collections into one by applying a function pairwise
