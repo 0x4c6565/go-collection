@@ -209,7 +209,7 @@ func (c *Collection[T]) SkipWhile(f func(x T) bool) *Collection[T] {
 func (c *Collection[T]) SkipLast(n int) *Collection[T] {
 	return New[T](iter.Seq[T](func(yield func(T) bool) {
 		slice := c.Slice()
-		for i := 0; i < len(slice)-n; i++ {
+		for i := range len(slice) - n {
 			if !yield(slice[i]) {
 				return
 			}
@@ -266,10 +266,7 @@ func (c *Collection[T]) TakeLast(n int) *Collection[T] {
 	return New[T](iter.Seq[T](func(yield func(T) bool) {
 		slice := c.Slice()
 
-		start := len(slice) - n
-		if start < 0 {
-			start = 0
-		}
+		start := max(len(slice)-n, 0)
 
 		for i := start; i < len(slice); i++ {
 			if !yield(slice[i]) {
@@ -290,7 +287,7 @@ func (c *Collection[T]) Any(f func(x T) bool) bool {
 }
 
 type NumericalTypes interface {
-	uint | uint8 | uint16 | uint32 | uint64 | int | int8 | int16 | int32 | int64 | float32 | float64
+	~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~float32 | ~float64
 }
 
 func orderByNumerical[T NumericalTypes](a T, b T, ascending bool) int {
@@ -404,8 +401,7 @@ func (c *Collection[T]) Intersect(other *Collection[T], equals func(a, b T) bool
 	return New[T](iter.Seq[T](func(yield func(T) bool) {
 		for v1 := range *c {
 			exists := false
-			otherSlice := other.Slice()
-			for _, v2 := range otherSlice {
+			for v2 := range *other {
 				if equals(v1, v2) {
 					exists = true
 					break
@@ -426,8 +422,7 @@ func (c *Collection[T]) Except(other *Collection[T], equals func(a, b T) bool) *
 	return New[T](iter.Seq[T](func(yield func(T) bool) {
 		for v1 := range *c {
 			exists := false
-			otherSlice := other.Slice()
-			for _, v2 := range otherSlice {
+			for v2 := range *other {
 				if equals(v1, v2) {
 					exists = true
 					break
@@ -508,22 +503,21 @@ func (c *Collection[T]) Aggregate(seed any, accumulator func(result any, item T)
 }
 
 // ParallelForEach executes an action for each element in the collection in parallel
-func (c *Collection[T]) ParallelForEach(ctx context.Context, action func(T) error, numWorkers int) error {
-	if numWorkers <= 0 {
-		numWorkers = runtime.NumCPU()
+func (c *Collection[T]) ParallelForEach(ctx context.Context, action func(ctx context.Context, v T) error, concurrency int) error {
+	if concurrency <= 0 {
+		concurrency = runtime.NumCPU()
 	}
 
 	g, ctx := errgroup.WithContext(ctx)
-	g.SetLimit(numWorkers)
-	slice := c.Slice()
-	for _, item := range slice {
+	g.SetLimit(concurrency)
+	for item := range *c {
 		currentItem := item
 		g.Go(func() error {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
 			default:
-				return action(currentItem)
+				return action(ctx, currentItem)
 			}
 		})
 	}
@@ -598,12 +592,10 @@ func (c *Collection[T]) ElementAtOrError(index int) (T, error) {
 // Join performs an inner join on two collections based on matching keys
 func Join[TOuter, TInner, TKey comparable, TResult any](outer *Collection[TOuter], inner *Collection[TInner], outerKeySelector func(TOuter) TKey, innerKeySelector func(TInner) TKey, resultSelector func(TOuter, TInner) TResult) *Collection[TResult] {
 	return New[TResult](iter.Seq[TResult](func(yield func(TResult) bool) {
-		innerSlice := inner.Slice()
-
 		for outerItem := range *outer {
 			outerKey := outerKeySelector(outerItem)
 
-			for _, innerItem := range innerSlice {
+			for innerItem := range *inner {
 				innerKey := innerKeySelector(innerItem)
 
 				if outerKey == innerKey {

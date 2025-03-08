@@ -2,6 +2,7 @@ package collection_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"slices"
 	"strconv"
@@ -1336,39 +1337,122 @@ func TestAggregate(t *testing.T) {
 }
 
 func TestParallelForEach(t *testing.T) {
-	numbers := collection.NewFromSlice([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
+	t.Run("SingleThread", func(t *testing.T) {
+		numbers := collection.NewFromSlice([]int{1, 2})
 
-	start := time.Now()
+		start := time.Now()
 
-	var results []int
-	var mu sync.Mutex
+		var results []int
+		var mu sync.Mutex
 
-	err := numbers.ParallelForEach(
-		context.Background(),
-		func(x int) error {
+		err := numbers.ParallelForEach(
+			context.Background(),
+			func(ctx context.Context, x int) error {
+				time.Sleep(1 * time.Second)
+
+				mu.Lock()
+				results = append(results, x)
+				mu.Unlock()
+				return nil
+			},
+			1,
+		)
+
+		duration := time.Since(start)
+
+		if err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
+
+		if duration < 2*time.Second {
+			t.Error("Expected single-threaded execution")
+		}
+
+		if len(results) != 2 {
+			t.Errorf("Expected 2 results, got %d", len(results))
+		}
+	})
+
+	t.Run("MultiThread", func(t *testing.T) {
+		numbers := collection.NewFromSlice([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
+
+		start := time.Now()
+
+		var results []int
+		var mu sync.Mutex
+
+		err := numbers.ParallelForEach(
+			context.Background(),
+			func(ctx context.Context, x int) error {
+				time.Sleep(1 * time.Second)
+
+				mu.Lock()
+				results = append(results, x)
+				mu.Unlock()
+				return nil
+			},
+			5,
+		)
+
+		duration := time.Since(start)
+
+		if err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
+
+		if duration > 3*time.Second {
+			t.Error("Expected parallel execution")
+		}
+
+		if len(results) != 10 {
+			t.Errorf("Expected 10 results, got %d", len(results))
+		}
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		numbers := collection.NewFromSlice([]int{1, 2, 3, 4, 5})
+
+		err := numbers.ParallelForEach(
+			context.Background(),
+			func(ctx context.Context, x int) error {
+				if x == 3 {
+					return errors.New("error")
+				}
+				return nil
+			},
+			1,
+		)
+
+		if err == nil {
+			t.Error("Expected error, got nil")
+		}
+	})
+
+	t.Run("Cancel", func(t *testing.T) {
+		numbers := collection.NewFromSlice([]int{1, 2, 3, 4, 5, 6})
+
+		ctx, cancel := context.WithCancel(context.Background())
+
+		go func() {
 			time.Sleep(1 * time.Second)
+			cancel()
+		}()
 
-			mu.Lock()
-			results = append(results, x)
-			mu.Unlock()
-			return nil
-		},
-		5,
-	)
+		err := numbers.ParallelForEach(
+			ctx,
+			func(ctx context.Context, x int) error {
+				if x == 3 {
+					return errors.New("error")
+				}
 
-	duration := time.Since(start)
+				time.Sleep(1 * time.Second)
+				return nil
+			},
+			1,
+		)
 
-	if err != nil {
-		t.Fatalf("Unexpected error: %v", err)
-	}
-
-	if duration > 3*time.Second {
-		t.Errorf("Expected parallel execution around 2 seconds, got %v", duration)
-	}
-
-	if len(results) != 10 {
-		t.Errorf("Expected 10 results, got %d", len(results))
-	}
+		assert.IsType(t, context.Canceled, err)
+	})
 }
 
 func TestZip(t *testing.T) {
