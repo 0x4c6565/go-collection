@@ -5,6 +5,7 @@ import (
 	"errors"
 	"iter"
 	"math/big"
+	"math/rand/v2"
 	"runtime"
 	"slices"
 	"strings"
@@ -137,6 +138,14 @@ func (c *Collection[T]) Contains(f func(x T) bool) bool {
 		}
 	}
 	return false
+}
+
+func (c *Collection[T]) Shuffle() *Collection[T] {
+	slice := c.Slice()
+	rand.Shuffle(len(slice), func(i, j int) {
+		slice[i], slice[j] = slice[j], slice[i]
+	})
+	return NewFromSlice(slice)
 }
 
 // Distinct returns a collection containing only distinct elements based on the provided equality function
@@ -502,6 +511,13 @@ func (c *Collection[T]) Aggregate(seed any, accumulator func(result any, item T)
 	return result
 }
 
+// ForEach executes an action for each element in the collection
+func (c *Collection[T]) ForEach(action func(v T)) {
+	for v := range *c {
+		action(v)
+	}
+}
+
 // ParallelForEach executes an action for each element in the collection in parallel
 func (c *Collection[T]) ParallelForEach(ctx context.Context, action func(ctx context.Context, v T) error, concurrency int) error {
 	if concurrency <= 0 {
@@ -523,6 +539,73 @@ func (c *Collection[T]) ParallelForEach(ctx context.Context, action func(ctx con
 	}
 
 	return g.Wait()
+}
+
+func (c *Collection[T]) ElementAt(index int) (T, bool) {
+	var d T
+	if index < 0 {
+		return d, false
+	}
+
+	count := 0
+	for v := range *c {
+		if count == index {
+			return v, true
+		}
+		count++
+	}
+	return d, false
+}
+
+func (c *Collection[T]) ElementAtOrError(index int) (T, error) {
+	val, ok := c.ElementAt(index)
+	if !ok {
+		return val, ErrIndexOutOfRange
+	}
+	return val, nil
+}
+
+// Partition divides the collection into two collections based on a predicate function.
+// The first collection contains elements that satisfy the predicate, the second contains elements that don't.
+func (c *Collection[T]) Partition(predicate func(x T) bool) (*Collection[T], *Collection[T]) {
+	var matches []T
+	var nonMatches []T
+
+	// Pre-allocate slices to improve performance for large collections
+	// Allocate with a conservative initial capacity
+	initialCapacity := c.Count() / 2
+	if initialCapacity > 0 {
+		matches = make([]T, 0, initialCapacity)
+		nonMatches = make([]T, 0, initialCapacity)
+	}
+
+	for v := range *c {
+		if predicate(v) {
+			matches = append(matches, v)
+		} else {
+			nonMatches = append(nonMatches, v)
+		}
+	}
+
+	return NewFromSlice(matches), NewFromSlice(nonMatches)
+}
+
+// Slice converts the collection to a slice
+func (c *Collection[T]) Slice() []T {
+	var val []T
+	for t := range *c {
+		val = append(val, t)
+	}
+	return val
+}
+
+// StringMap converts the collection to a map with string keys
+func (c *Collection[T]) StringMap(keySelector func(x T) string) map[string]T {
+	m := make(map[string]T)
+	for v := range *c {
+		m[keySelector(v)] = v
+	}
+	return m
 }
 
 // Zip combines two collections into one by applying a function pairwise
@@ -565,30 +648,6 @@ func Zip[T1, T2, TResult any](c1 *Collection[T1], c2 *Collection[T2], zipper fun
 	}))
 }
 
-func (c *Collection[T]) ElementAt(index int) (T, bool) {
-	var d T
-	if index < 0 {
-		return d, false
-	}
-
-	count := 0
-	for v := range *c {
-		if count == index {
-			return v, true
-		}
-		count++
-	}
-	return d, false
-}
-
-func (c *Collection[T]) ElementAtOrError(index int) (T, error) {
-	val, ok := c.ElementAt(index)
-	if !ok {
-		return val, ErrIndexOutOfRange
-	}
-	return val, nil
-}
-
 // Join performs an inner join on two collections based on matching keys
 func Join[TOuter, TInner, TKey comparable, TResult any](outer *Collection[TOuter], inner *Collection[TInner], outerKeySelector func(TOuter) TKey, innerKeySelector func(TInner) TKey, resultSelector func(TOuter, TInner) TResult) *Collection[TResult] {
 	return New[TResult](iter.Seq[TResult](func(yield func(TResult) bool) {
@@ -606,24 +665,6 @@ func Join[TOuter, TInner, TKey comparable, TResult any](outer *Collection[TOuter
 			}
 		}
 	}))
-}
-
-// Slice converts the collection to a slice
-func (c *Collection[T]) Slice() []T {
-	var val []T
-	for t := range *c {
-		val = append(val, t)
-	}
-	return val
-}
-
-// StringMap converts the collection to a map with string keys
-func (c *Collection[T]) StringMap(keySelector func(x T) string) map[string]T {
-	m := make(map[string]T)
-	for v := range *c {
-		m[keySelector(v)] = v
-	}
-	return m
 }
 
 // Average calculates the average value of a numeric collection

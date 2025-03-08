@@ -329,6 +329,30 @@ func TestContains(t *testing.T) {
 	})
 }
 
+func TestSingle(t *testing.T) {
+	t.Run("OneElement", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a"})
+		v, ok := c.Single()
+
+		assert.True(t, ok)
+		assert.Equal(t, "a", v)
+	})
+
+	t.Run("MultipleElements", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b"})
+		_, ok := c.Single()
+
+		assert.False(t, ok)
+	})
+
+	t.Run("NoElements", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{})
+		_, ok := c.Single()
+
+		assert.False(t, ok)
+	})
+}
+
 func TestDistinct(t *testing.T) {
 	t.Run("StringsWithDuplicates", func(t *testing.T) {
 		c := collection.NewFromSlice([]string{"a", "b", "a", "c", "b"})
@@ -1336,6 +1360,20 @@ func TestAggregate(t *testing.T) {
 	})
 }
 
+func TestForEach(t *testing.T) {
+	numbers := collection.NewFromSlice([]int{1, 2, 3})
+
+	var results []int
+
+	numbers.ForEach(func(x int) {
+		results = append(results, x)
+	})
+
+	if len(results) != 3 {
+		t.Errorf("Expected 3 results, got %d", len(results))
+	}
+}
+
 func TestParallelForEach(t *testing.T) {
 	t.Run("SingleThread", func(t *testing.T) {
 		numbers := collection.NewFromSlice([]int{1, 2})
@@ -1544,6 +1582,29 @@ func TestElementAtOrError(t *testing.T) {
 
 		assert.NotNil(t, err)
 	})
+}
+
+func TestPartition(t *testing.T) {
+	c := collection.NewFromSlice([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
+
+	even, odd := c.Partition(func(x int) bool {
+		return x%2 == 0
+	})
+
+	assert.Equal(t, 5, len(even.Slice()))
+	assert.Equal(t, 5, len(odd.Slice()))
+
+	assert.Contains(t, even.Slice(), 2)
+	assert.Contains(t, even.Slice(), 4)
+	assert.Contains(t, even.Slice(), 6)
+	assert.Contains(t, even.Slice(), 8)
+	assert.Contains(t, even.Slice(), 10)
+
+	assert.Contains(t, odd.Slice(), 1)
+	assert.Contains(t, odd.Slice(), 3)
+	assert.Contains(t, odd.Slice(), 5)
+	assert.Contains(t, odd.Slice(), 7)
+	assert.Contains(t, odd.Slice(), 9)
 }
 
 func TestJoin(t *testing.T) {
