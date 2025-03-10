@@ -97,6 +97,7 @@ for category, group := range groups {
 - `New[T any, I iter.Seq[T] | []T](seq I) *Collection[T]` - Create a collection from an iterator or slice
 - `NewFromIterator[T any](s iter.Seq[T]) *Collection[T]` - Create a collection from an iterator
 - `NewFromSlice[T any](s []T) *Collection[T]` - Create a collection from a slice
+- `NewFromItems[T any](s ...T) *Collection[T]` - Create a collection from given items
 - `NewFromStringMap[T any](m map[string]T) *Collection[T]` - Create a collection from a string map
 
 ### Filtering and Projection
@@ -108,6 +109,7 @@ for category, group := range groups {
 
 - `Zip[T1, T2, TResult any](c1 *Collection[T1], c2 *Collection[T2], zipper func(T1, T2) TResult) *Collection[TResult]` - Combines two collections into one by applying a function pairwise
 - `Join[TOuter, TInner, TKey comparable, TResult any](outer *Collection[TOuter], inner *Collection[TInner], outerKeySelector func(TOuter) TKey, innerKeySelector func(TInner) TKey, resultSelector func(TOuter, TInner) TResult) *Collection[TResult]` - Performs an inner join on two collections based on matching keys
+- `Flatten[T any](c *Collection[*Collection[T]]) *Collection[T]` - Flattens a collection of collections into a single collection
 
 ### Numeric Operations
 

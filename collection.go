@@ -39,6 +39,12 @@ func NewFromSlice[T any](s []T) *Collection[T] {
 	return &d
 }
 
+// NewFromItems creates a new Collection from given items
+func NewFromItems[T any](s ...T) *Collection[T] {
+	d := Collection[T](slices.Values(s))
+	return &d
+}
+
 // NewFromStringMap creates a new Collection from a map with string keys
 func NewFromStringMap[T any](m map[string]T) *Collection[T] {
 	var values []T
@@ -659,6 +665,19 @@ func Join[TOuter, TInner, TKey comparable, TResult any](outer *Collection[TOuter
 					if !yield(resultSelector(outerItem, innerItem)) {
 						return
 					}
+				}
+			}
+		}
+	}))
+}
+
+// Flatten flattens a collection of collections into a single collection
+func Flatten[T any](c *Collection[*Collection[T]]) *Collection[T] {
+	return New[T](iter.Seq[T](func(yield func(T) bool) {
+		for innerCollection := range *c {
+			for v := range *innerCollection {
+				if !yield(v) {
+					return
 				}
 			}
 		}

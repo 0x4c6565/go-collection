@@ -46,6 +46,13 @@ func TestNewFromSlice(t *testing.T) {
 	assert.Equal(t, "a", v)
 }
 
+func TestNewFromItems(t *testing.T) {
+	c := collection.NewFromItems("a", "b", "c")
+	v, _ := c.First()
+
+	assert.Equal(t, "a", v)
+}
+
 func TestNewFromStringMap(t *testing.T) {
 	m := map[string]string{
 		"key1": "value1",
@@ -1866,31 +1873,48 @@ func TestJoin(t *testing.T) {
 	})
 }
 
-func TestSlice(t *testing.T) {
-	c := collection.NewFromSlice([]string{"a", "b", "c"})
-	v := c.Slice()
+func TestFlatten(t *testing.T) {
+	t.Run("FlattenNonEmpty", func(t *testing.T) {
+		c1 := collection.NewFromSlice([]int{1, 2, 3})
+		c2 := collection.NewFromSlice([]int{4, 5, 6})
+		c3 := collection.NewFromSlice([]int{7, 8, 9})
 
-	assert.Equal(t, []string{"a", "b", "c"}, v)
-}
+		collections := collection.NewFromSlice([]*collection.Collection[int]{c1, c2, c3})
+		result := collection.Flatten(collections).Slice()
 
-func TestStringMap(t *testing.T) {
-	type person struct {
-		Name string
-		Age  int
-	}
-	c := collection.NewFromSlice([]person{
-		{Name: "Alice", Age: 25},
-		{Name: "Bob", Age: 30},
-		{Name: "Charlie", Age: 35},
+		assert.Equal(t, 9, len(result))
+		assert.Equal(t, []int{1, 2, 3, 4, 5, 6, 7, 8, 9}, result)
 	})
-	v := c.StringMap(func(x person) string {
-		return x.Name
-	})
-	s := c.Slice()
 
-	assert.Equal(t, s[0], v["Alice"])
-	assert.Equal(t, s[1], v["Bob"])
-	assert.Equal(t, s[2], v["Charlie"])
+	t.Run("FlattenEmpty", func(t *testing.T) {
+		collections := collection.NewFromSlice([]*collection.Collection[int]{})
+		result := collection.Flatten(collections).Slice()
+
+		assert.Equal(t, 0, len(result))
+	})
+
+	t.Run("FlattenWithEmptyCollections", func(t *testing.T) {
+		c1 := collection.NewFromSlice([]int{})
+		c2 := collection.NewFromSlice([]int{4, 5, 6})
+		c3 := collection.NewFromSlice([]int{})
+
+		collections := collection.NewFromSlice([]*collection.Collection[int]{c1, c2, c3})
+		result := collection.Flatten(collections).Slice()
+
+		assert.Equal(t, 3, len(result))
+		assert.Equal(t, []int{4, 5, 6}, result)
+	})
+
+	t.Run("Break", func(t *testing.T) {
+		c1 := collection.NewFromSlice([]int{1, 2, 3})
+		c2 := collection.NewFromSlice([]int{4, 5, 6})
+		c3 := collection.NewFromSlice([]int{7, 8, 9})
+
+		collections := collection.NewFromSlice([]*collection.Collection[int]{c1, c2, c3})
+		for range *collection.Flatten(collections) {
+			break
+		}
+	})
 }
 
 func TestAverage(t *testing.T) {
@@ -2121,4 +2145,31 @@ func TestMax(t *testing.T) {
 
 		assert.Equal(t, -1, v)
 	})
+}
+
+func TestSlice(t *testing.T) {
+	c := collection.NewFromSlice([]string{"a", "b", "c"})
+	v := c.Slice()
+
+	assert.Equal(t, []string{"a", "b", "c"}, v)
+}
+
+func TestStringMap(t *testing.T) {
+	type person struct {
+		Name string
+		Age  int
+	}
+	c := collection.NewFromSlice([]person{
+		{Name: "Alice", Age: 25},
+		{Name: "Bob", Age: 30},
+		{Name: "Charlie", Age: 35},
+	})
+	v := c.StringMap(func(x person) string {
+		return x.Name
+	})
+	s := c.Slice()
+
+	assert.Equal(t, s[0], v["Alice"])
+	assert.Equal(t, s[1], v["Bob"])
+	assert.Equal(t, s[2], v["Charlie"])
 }
