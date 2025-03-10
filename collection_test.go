@@ -353,6 +353,40 @@ func TestSingle(t *testing.T) {
 	})
 }
 
+func TestShuffle(t *testing.T) {
+	t.Run("ShuffleElements", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c", "d", "e"})
+		shuffled := c.Shuffle().Slice()
+
+		assert.Equal(t, 5, len(shuffled))
+		assert.Contains(t, shuffled, "a")
+		assert.Contains(t, shuffled, "b")
+		assert.Contains(t, shuffled, "c")
+		assert.Contains(t, shuffled, "d")
+		assert.Contains(t, shuffled, "e")
+
+		// Check that the order is different
+		if slices.Equal(shuffled, []string{"a", "b", "c", "d", "e"}) {
+			t.Error("Expected the order to be different after shuffle")
+		}
+	})
+
+	t.Run("ShuffleEmptyCollection", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{})
+		shuffled := c.Shuffle().Slice()
+
+		assert.Equal(t, 0, len(shuffled))
+	})
+
+	t.Run("ShuffleSingleElement", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a"})
+		shuffled := c.Shuffle().Slice()
+
+		assert.Equal(t, 1, len(shuffled))
+		assert.Equal(t, "a", shuffled[0])
+	})
+}
+
 func TestDistinct(t *testing.T) {
 	t.Run("StringsWithDuplicates", func(t *testing.T) {
 		c := collection.NewFromSlice([]string{"a", "b", "a", "c", "b"})
@@ -732,7 +766,7 @@ func TestSkipWhile(t *testing.T) {
 	t.Run("Break", func(t *testing.T) {
 		c := collection.NewFromSlice([]int{1, 2, 3, 4})
 		for range *c.SkipWhile(func(x int) bool {
-			return x < 5
+			return false
 		}) {
 			break
 		}
@@ -1051,6 +1085,15 @@ func TestConcat(t *testing.T) {
 			break
 		}
 	})
+
+	t.Run("BreakSecond", func(t *testing.T) {
+		c1 := collection.NewFromSlice([]string{})
+		c2 := collection.NewFromSlice([]string{"a", "b"})
+
+		for range *c1.Concat(c2) {
+			break
+		}
+	})
 }
 
 func TestGroupBy(t *testing.T) {
@@ -1112,6 +1155,20 @@ func TestGroupBy(t *testing.T) {
 		assert.Contains(t, group3, "ccc")
 		assert.Contains(t, group3, "eee")
 	})
+
+	t.Run("Break", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"apple", "banana", "cherry", "apricot", "blueberry"})
+
+		groups := c.GroupBy(func(x string) any {
+			return string(x[0])
+		})
+
+		for _, group := range groups {
+			for range *group {
+				break
+			}
+		}
+	})
 }
 
 func TestUnion(t *testing.T) {
@@ -1158,6 +1215,17 @@ func TestUnion(t *testing.T) {
 		assert.Contains(t, result, 1)
 		assert.Contains(t, result, 2)
 		assert.Contains(t, result, 3)
+	})
+
+	t.Run("Break", func(t *testing.T) {
+		c1 := collection.NewFromSlice([]int{1, 2, 3, 4})
+		c2 := collection.NewFromSlice([]int{3, 4, 5, 6})
+
+		for range *c1.Union(c2, func(a, b int) bool {
+			return a == b
+		}) {
+			break
+		}
 	})
 }
 
@@ -1206,6 +1274,17 @@ func TestIntersect(t *testing.T) {
 		}).Slice()
 
 		assert.Equal(t, 0, len(result))
+	})
+
+	t.Run("Break", func(t *testing.T) {
+		c1 := collection.NewFromSlice([]int{1, 2, 3, 4})
+		c2 := collection.NewFromSlice([]int{3, 4, 5, 6})
+
+		for range *c1.Intersect(c2, func(a, b int) bool {
+			return a == b
+		}) {
+			break
+		}
 	})
 }
 
@@ -1257,59 +1336,108 @@ func TestExcept(t *testing.T) {
 
 		assert.Equal(t, 0, len(result))
 	})
+
+	t.Run("Break", func(t *testing.T) {
+		c1 := collection.NewFromSlice([]int{1, 2, 3, 4})
+		c2 := collection.NewFromSlice([]int{3, 4, 5, 6})
+
+		for range *c1.Except(c2, func(a, b int) bool {
+			return a == b
+		}) {
+			break
+		}
+	})
 }
 
 func TestReverse(t *testing.T) {
-	c := collection.NewFromSlice([]string{"a", "b", "c"})
-	result := c.Reverse().Slice()
+	t.Run("Reversed", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c"})
+		result := c.Reverse().Slice()
 
-	assert.Equal(t, 3, len(result))
-	assert.Equal(t, "c", result[0])
-	assert.Equal(t, "b", result[1])
-	assert.Equal(t, "a", result[2])
+		assert.Equal(t, 3, len(result))
+		assert.Equal(t, "c", result[0])
+		assert.Equal(t, "b", result[1])
+		assert.Equal(t, "a", result[2])
+	})
+
+	t.Run("Break", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c"})
+		for range *c.Reverse() {
+			break
+		}
+	})
 }
 
 func TestAppend(t *testing.T) {
-	c := collection.NewFromSlice([]string{"a", "b", "c"})
-	result := c.Append("d").Slice()
+	t.Run("Appends", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c"})
+		result := c.Append("d").Slice()
 
-	assert.Equal(t, 4, len(result))
-	assert.Equal(t, "a", result[0])
-	assert.Equal(t, "b", result[1])
-	assert.Equal(t, "c", result[2])
-	assert.Equal(t, "d", result[3])
+		assert.Equal(t, 4, len(result))
+		assert.Equal(t, "a", result[0])
+		assert.Equal(t, "b", result[1])
+		assert.Equal(t, "c", result[2])
+		assert.Equal(t, "d", result[3])
+	})
+
+	t.Run("Break", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c"})
+		for range *c.Append("d") {
+			break
+		}
+	})
 }
 
 func TestPrepend(t *testing.T) {
-	c := collection.NewFromSlice([]string{"a", "b", "c"})
-	result := c.Prepend("d").Slice()
+	t.Run("Prepends", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c"})
+		result := c.Prepend("d").Slice()
 
-	assert.Equal(t, 4, len(result))
-	assert.Equal(t, "d", result[0])
-	assert.Equal(t, "a", result[1])
-	assert.Equal(t, "b", result[2])
-	assert.Equal(t, "c", result[3])
+		assert.Equal(t, 4, len(result))
+		assert.Equal(t, "d", result[0])
+		assert.Equal(t, "a", result[1])
+		assert.Equal(t, "b", result[2])
+		assert.Equal(t, "c", result[3])
+	})
+
+	t.Run("Break", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c"})
+		for range *c.Prepend("d") {
+			break
+		}
+	})
 }
 
 func TestChunk(t *testing.T) {
-	c := collection.NewFromSlice([]string{"a", "b", "c", "d", "e", "f", "g", "h"})
-	result := c.Chunk(3)
+	t.Run("Chunked", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c", "d", "e", "f", "g", "h"})
+		result := c.Chunk(3)
 
-	assert.Equal(t, 3, len(result))
+		assert.Equal(t, 3, len(result))
 
-	assert.Equal(t, 3, len(result[0].Slice()))
-	assert.Equal(t, "a", result[0].Slice()[0])
-	assert.Equal(t, "b", result[0].Slice()[1])
-	assert.Equal(t, "c", result[0].Slice()[2])
+		assert.Equal(t, 3, len(result[0].Slice()))
+		assert.Equal(t, "a", result[0].Slice()[0])
+		assert.Equal(t, "b", result[0].Slice()[1])
+		assert.Equal(t, "c", result[0].Slice()[2])
 
-	assert.Equal(t, 3, len(result[1].Slice()))
-	assert.Equal(t, "d", result[1].Slice()[0])
-	assert.Equal(t, "e", result[1].Slice()[1])
-	assert.Equal(t, "f", result[1].Slice()[2])
+		assert.Equal(t, 3, len(result[1].Slice()))
+		assert.Equal(t, "d", result[1].Slice()[0])
+		assert.Equal(t, "e", result[1].Slice()[1])
+		assert.Equal(t, "f", result[1].Slice()[2])
 
-	assert.Equal(t, 2, len(result[2].Slice()))
-	assert.Equal(t, "g", result[2].Slice()[0])
-	assert.Equal(t, "h", result[2].Slice()[1])
+		assert.Equal(t, 2, len(result[2].Slice()))
+		assert.Equal(t, "g", result[2].Slice()[0])
+		assert.Equal(t, "h", result[2].Slice()[1])
+	})
+
+	t.Run("Break", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c", "d", "e", "f", "g", "h"})
+		for _, chunk := range c.Chunk(3) {
+			for range *chunk {
+				break
+			}
+		}
+	})
 }
 
 func TestAggregate(t *testing.T) {
@@ -1533,6 +1661,17 @@ func TestZip(t *testing.T) {
 		assert.Equal(t, "1a", result[0])
 		assert.Equal(t, "2b", result[1])
 	})
+
+	t.Run("Break", func(t *testing.T) {
+		c1 := collection.NewFromSlice([]int{1, 2, 3})
+		c2 := collection.NewFromSlice([]string{"a", "b", "c"})
+
+		for range *collection.Zip(c1, c2, func(a int, b string) string {
+			return strconv.Itoa(a) + b
+		}) {
+			break
+		}
+	})
 }
 
 func TestElementAt(t *testing.T) {
@@ -1585,26 +1724,52 @@ func TestElementAtOrError(t *testing.T) {
 }
 
 func TestPartition(t *testing.T) {
-	c := collection.NewFromSlice([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
+	t.Run("Partitions", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
 
-	even, odd := c.Partition(func(x int) bool {
-		return x%2 == 0
+		even, odd := c.Partition(func(x int) bool {
+			return x%2 == 0
+		})
+
+		assert.Equal(t, 5, len(even.Slice()))
+		assert.Equal(t, 5, len(odd.Slice()))
+
+		assert.Contains(t, even.Slice(), 2)
+		assert.Contains(t, even.Slice(), 4)
+		assert.Contains(t, even.Slice(), 6)
+		assert.Contains(t, even.Slice(), 8)
+		assert.Contains(t, even.Slice(), 10)
+
+		assert.Contains(t, odd.Slice(), 1)
+		assert.Contains(t, odd.Slice(), 3)
+		assert.Contains(t, odd.Slice(), 5)
+		assert.Contains(t, odd.Slice(), 7)
+		assert.Contains(t, odd.Slice(), 9)
 	})
 
-	assert.Equal(t, 5, len(even.Slice()))
-	assert.Equal(t, 5, len(odd.Slice()))
+	t.Run("BreakEven", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
 
-	assert.Contains(t, even.Slice(), 2)
-	assert.Contains(t, even.Slice(), 4)
-	assert.Contains(t, even.Slice(), 6)
-	assert.Contains(t, even.Slice(), 8)
-	assert.Contains(t, even.Slice(), 10)
+		even, _ := c.Partition(func(x int) bool {
+			return x%2 == 0
+		})
 
-	assert.Contains(t, odd.Slice(), 1)
-	assert.Contains(t, odd.Slice(), 3)
-	assert.Contains(t, odd.Slice(), 5)
-	assert.Contains(t, odd.Slice(), 7)
-	assert.Contains(t, odd.Slice(), 9)
+		for range *even {
+			break
+		}
+	})
+
+	t.Run("BreakOdd", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
+
+		_, odd := c.Partition(func(x int) bool {
+			return x%2 != 0
+		})
+
+		for range *odd {
+			break
+		}
+	})
 }
 
 func TestJoin(t *testing.T) {
@@ -1620,55 +1785,85 @@ func TestJoin(t *testing.T) {
 		Species string
 	}
 
-	// Setup
-	people := collection.NewFromSlice([]testPerson{
-		{1, "Alice", 30},
-		{2, "Bob", 25},
-		{3, "Charlie", 35},
-	})
+	t.Run("Joins", func(t *testing.T) {
 
-	pets := collection.NewFromSlice([]testPet{
-		{1, "Fluffy", "Cat"},
-		{2, "Rex", "Dog"},
-		{1, "Whiskers", "Cat"},
-		{4, "Spike", "Dog"},
-	})
+		// Setup
+		people := collection.NewFromSlice([]testPerson{
+			{1, "Alice", 30},
+			{2, "Bob", 25},
+			{3, "Charlie", 35},
+		})
 
-	// Perform join
-	result := collection.Join(
-		people,
-		pets,
-		func(p testPerson) int { return p.ID },
-		func(pet testPet) int { return pet.OwnerID },
-		func(p testPerson, pet testPet) string {
-			return fmt.Sprintf("%s owns %s", p.Name, pet.Name)
-		},
-	).Slice()
+		pets := collection.NewFromSlice([]testPet{
+			{1, "Fluffy", "Cat"},
+			{2, "Rex", "Dog"},
+			{1, "Whiskers", "Cat"},
+			{4, "Spike", "Dog"},
+		})
 
-	// Verify results
-	expected := []string{
-		"Alice owns Fluffy",
-		"Alice owns Whiskers",
-		"Bob owns Rex",
-	}
+		// Perform join
+		result := collection.Join(
+			people,
+			pets,
+			func(p testPerson) int { return p.ID },
+			func(pet testPet) int { return pet.OwnerID },
+			func(p testPerson, pet testPet) string {
+				return fmt.Sprintf("%s owns %s", p.Name, pet.Name)
+			},
+		).Slice()
 
-	if len(result) != len(expected) {
-		t.Errorf("Expected %d results, got %d", len(expected), len(result))
-	}
+		// Verify results
+		expected := []string{
+			"Alice owns Fluffy",
+			"Alice owns Whiskers",
+			"Bob owns Rex",
+		}
 
-	// Check that all expected results are present
-	for _, exp := range expected {
-		found := false
-		for _, res := range result {
-			if res == exp {
-				found = true
-				break
+		if len(result) != len(expected) {
+			t.Errorf("Expected %d results, got %d", len(expected), len(result))
+		}
+
+		// Check that all expected results are present
+		for _, exp := range expected {
+			found := false
+			for _, res := range result {
+				if res == exp {
+					found = true
+					break
+				}
+			}
+			if !found {
+				t.Errorf("Expected result not found: %s", exp)
 			}
 		}
-		if !found {
-			t.Errorf("Expected result not found: %s", exp)
+	})
+
+	t.Run("Break", func(t *testing.T) {
+		people := collection.NewFromSlice([]testPerson{
+			{1, "Alice", 30},
+			{2, "Bob", 25},
+			{3, "Charlie", 35},
+		})
+
+		pets := collection.NewFromSlice([]testPet{
+			{1, "Fluffy", "Cat"},
+			{2, "Rex", "Dog"},
+			{1, "Whiskers", "Cat"},
+			{4, "Spike", "Dog"},
+		})
+
+		for range *collection.Join(
+			people,
+			pets,
+			func(p testPerson) int { return p.ID },
+			func(pet testPet) int { return pet.OwnerID },
+			func(p testPerson, pet testPet) string {
+				return fmt.Sprintf("%s owns %s", p.Name, pet.Name)
+			},
+		) {
+			break
 		}
-	}
+	})
 }
 
 func TestSlice(t *testing.T) {

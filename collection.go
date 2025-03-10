@@ -18,15 +18,13 @@ var ErrIndexOutOfRange = errors.New("index out of range")
 
 type Collection[T any] func(yield func(T) bool)
 
-// New creates a new Collection from either a iterator or a slice
+// New creates a new Collection from either an iterator or a slice
 func New[T any, I iter.Seq[T] | []T](seq I) *Collection[T] {
-	var d Collection[T]
 	if s, ok := any(seq).([]T); ok {
-		d = Collection[T](slices.Values(s))
+		return NewFromSlice(s)
 	} else {
-		d = Collection[T](any(seq).(iter.Seq[T]))
+		return NewFromIterator(any(seq).(iter.Seq[T]))
 	}
-	return &d
 }
 
 // NewFromIterator creates a new Collection from an iterator
