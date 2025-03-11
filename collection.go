@@ -451,6 +451,24 @@ func (c *Collection[T]) Except(other *Collection[T], equals func(a, b T) bool) *
 	}))
 }
 
+// Equals compares collection with another to determine if they are equal
+func (c *Collection[T]) Equals(other *Collection[T], equals func(a, b T) bool) bool {
+	iter1 := c.Slice()
+	iter2 := other.Slice()
+
+	if len(iter1) != len(iter2) {
+		return false
+	}
+
+	for i := range iter1 {
+		if !equals(iter1[i], iter2[i]) {
+			return false
+		}
+	}
+
+	return true
+}
+
 // Reverse returns a collection with the elements in reverse order
 func (c *Collection[T]) Reverse() *Collection[T] {
 	slice := c.Slice()

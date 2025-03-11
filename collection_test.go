@@ -1397,6 +1397,44 @@ func TestExcept(t *testing.T) {
 	})
 }
 
+func TestEquals(t *testing.T) {
+	t.Run("Equal", func(t *testing.T) {
+		c1 := collection.NewFromSlice([]int{1, 2, 3})
+		c2 := collection.NewFromSlice([]int{1, 2, 3})
+
+		assert.True(t, c1.Equals(c2, func(a, b int) bool {
+			return a == b
+		}))
+	})
+
+	t.Run("NotEqual", func(t *testing.T) {
+		c1 := collection.NewFromSlice([]int{1, 2, 3})
+		c2 := collection.NewFromSlice([]int{1, 2, 4})
+
+		assert.False(t, c1.Equals(c2, func(a, b int) bool {
+			return a == b
+		}))
+	})
+
+	t.Run("DifferentLengths", func(t *testing.T) {
+		c1 := collection.NewFromSlice([]int{1, 2, 3})
+		c2 := collection.NewFromSlice([]int{1, 2, 3, 4})
+
+		assert.False(t, c1.Equals(c2, func(a, b int) bool {
+			return a == b
+		}))
+	})
+
+	t.Run("EmptyCollections", func(t *testing.T) {
+		c1 := collection.NewFromSlice([]int{})
+		c2 := collection.NewFromSlice([]int{})
+
+		assert.True(t, c1.Equals(c2, func(a, b int) bool {
+			return a == b
+		}))
+	})
+}
+
 func TestReverse(t *testing.T) {
 	t.Run("Reversed", func(t *testing.T) {
 		c := collection.NewFromSlice([]string{"a", "b", "c"})

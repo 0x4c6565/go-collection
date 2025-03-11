@@ -162,6 +162,7 @@ for category, group := range groups {
 - `All(f func(x T) bool) bool` - Check if all elements satisfy a condition
 - `Any(f func(x T) bool) bool` - Check if any element satisfies a condition
 - `Contains(f func(x T) bool) bool` - Check if collection contains elements satisfying a condition
+- `Equals(other *Collection[T], equals func(a, b T) bool) bool` - compares collection with another to determine if they are equal
 
 ### Set Operations
 
