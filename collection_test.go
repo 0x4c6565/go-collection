@@ -222,6 +222,47 @@ func TestSelectMany(t *testing.T) {
 	})
 }
 
+func TestMap(t *testing.T) {
+	t.Run("Ints", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"1", "2", "3"})
+		v := collection.Map(c, func(x string) int {
+			i, _ := strconv.Atoi(x)
+			return i
+		}, func(x string) string {
+			return x
+		})
+
+		assert.Len(t, v, 3)
+		assert.Equal(t, "1", v[1])
+		assert.Equal(t, "2", v[2])
+		assert.Equal(t, "3", v[3])
+	})
+
+	t.Run("Structs", func(t *testing.T) {
+		type teststruct struct {
+			Property1 string
+			Property2 int
+		}
+
+		c := collection.NewFromSlice([]teststruct{
+			{Property1: "a", Property2: 1},
+			{Property1: "b", Property2: 2},
+			{Property1: "c", Property2: 3},
+		})
+
+		v := collection.Map(c, func(x teststruct) string {
+			return x.Property1
+		}, func(x teststruct) int {
+			return x.Property2
+		})
+
+		assert.Len(t, v, 3)
+		assert.Equal(t, 1, v["a"])
+		assert.Equal(t, 2, v["b"])
+		assert.Equal(t, 3, v["c"])
+	})
+}
+
 func TestAll(t *testing.T) {
 	t.Run("True", func(t *testing.T) {
 		c := collection.NewFromSlice([]string{"a", "b", "c"})

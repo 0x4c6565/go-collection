@@ -684,6 +684,15 @@ func Flatten[T any](c *Collection[*Collection[T]]) *Collection[T] {
 	}))
 }
 
+// Map converts the collection to a map
+func Map[T any, K comparable, V any](c *Collection[T], keySelector func(x T) K, valueSelector func(x T) V) map[K]V {
+	m := make(map[K]V)
+	for v := range *c {
+		m[keySelector(v)] = valueSelector(v)
+	}
+	return m
+}
+
 // Average calculates the average value of a numeric collection
 func Average[T NumericalTypes](c *Collection[T]) *big.Float {
 	sum := float64(0)

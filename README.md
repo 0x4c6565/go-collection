@@ -111,6 +111,10 @@ for category, group := range groups {
 - `Join[TOuter, TInner, TKey comparable, TResult any](outer *Collection[TOuter], inner *Collection[TInner], outerKeySelector func(TOuter) TKey, innerKeySelector func(TInner) TKey, resultSelector func(TOuter, TInner) TResult) *Collection[TResult]` - Performs an inner join on two collections based on matching keys
 - `Flatten[T any](c *Collection[*Collection[T]]) *Collection[T]` - Flattens a collection of collections into a single collection
 
+### Conversion
+
+- `Map[T any, K comparable, V any](c *Collection[T], keySelector func(x T) K, valueSelector func(x T) V) map[K]V` - Converts a collection to a map
+
 ### Numeric Operations
 
 - `Average[T NumericalTypes](c *Collection[T]) *big.Float` - Calculate average of numeric collection
