@@ -24,7 +24,7 @@ numbers := collection.NewFromSlice([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
 result := numbers.
 	Where(func(x int) bool { return x % 2 == 0 }). // Get even numbers
 	Select(func(x int) any { return x * x }).      // Square each number
-	Slice()                                        // Convert to slice
+	ToSlice()                                        // Convert to slice
 
 fmt.Println(result) // Output: [4, 16, 36, 64, 100]
 ```
@@ -81,7 +81,7 @@ products := collection.NewFromSlice([]Product{
 groups := products.GroupBy(func(p Product) any { return p.Category })
 
 for category, group := range groups {
-	avg := collection.Average(collection.Select(group, func(p Product) float64 { return p.Price }))
+	avg, _ := collection.AverageOrError(collection.Select(group, func(p Product) float64 { return p.Price }))
 	fmt.Printf("Category: %s, Average Price: £%.2f\n", category, avg)
 }
 
@@ -99,6 +99,7 @@ for category, group := range groups {
 - `NewFromSlice[T any](s []T) *Collection[T]` - Create a collection from a slice
 - `NewFromItems[T any](s ...T) *Collection[T]` - Create a collection from given items
 - `NewFromStringMap[T any](m map[string]T) *Collection[T]` - Create a collection from a string map
+- `NewFromChannel[T any](ch <-chan T) *Collection[T]` - Create a collection from a channel
 
 ### Filtering and Projection
 
@@ -182,8 +183,9 @@ for category, group := range groups {
 
 ### Conversion
 
-- `Slice() []T` - Convert collection to a slice
-- `StringMap(keySelector func(x T) string) map[string]T` - Convert collection to a map with string keys
+- `ToSlice() []T` - Convert collection to a slice
+- `ToStringMap(keySelector func(x T) string) map[string]T` - Convert collection to a map with string keys
+- `ToChannel() <-chan T` - Convert collection to a channel
 
 ## Errors
 

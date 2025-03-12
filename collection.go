@@ -54,6 +54,17 @@ func NewFromStringMap[T any](m map[string]T) *Collection[T] {
 	return NewFromSlice(values)
 }
 
+// NewFromChannel creates a new Collection from a channel
+func NewFromChannel[T any](ch <-chan T) *Collection[T] {
+	return New[T](iter.Seq[T](func(yield func(T) bool) {
+		for v := range ch {
+			if !yield(v) {
+				return
+			}
+		}
+	}))
+}
+
 // Where filters the collection to only elements satisfying the predicate function
 func (c *Collection[T]) Where(f func(x T) bool) *Collection[T] {
 	return New[T](iter.Seq[T](func(yield func(T) bool) {
@@ -145,7 +156,7 @@ func (c *Collection[T]) Contains(f func(x T) bool) bool {
 }
 
 func (c *Collection[T]) Shuffle() *Collection[T] {
-	slice := c.Slice()
+	slice := c.ToSlice()
 	rand.Shuffle(len(slice), func(i, j int) {
 		slice[i], slice[j] = slice[j], slice[i]
 	})
@@ -221,7 +232,7 @@ func (c *Collection[T]) SkipWhile(f func(x T) bool) *Collection[T] {
 // SkipLast returns a collection that skips the last n elements
 func (c *Collection[T]) SkipLast(n int) *Collection[T] {
 	return New[T](iter.Seq[T](func(yield func(T) bool) {
-		slice := c.Slice()
+		slice := c.ToSlice()
 		for i := range len(slice) - n {
 			if !yield(slice[i]) {
 				return
@@ -277,7 +288,7 @@ func (c *Collection[T]) TakeWhile(f func(x T) bool) *Collection[T] {
 // TakeLast returns a collection of only the last n elements
 func (c *Collection[T]) TakeLast(n int) *Collection[T] {
 	return New[T](iter.Seq[T](func(yield func(T) bool) {
-		slice := c.Slice()
+		slice := c.ToSlice()
 
 		start := max(len(slice)-n, 0)
 
@@ -322,7 +333,7 @@ func orderByNumerical[T NumericalTypes](a T, b T, ascending bool) int {
 
 // OrderBy returns a collection ordered by the key selector
 func (c *Collection[T]) OrderBy(f func(x T) any, ascending bool) *Collection[T] {
-	slice := c.Slice()
+	slice := c.ToSlice()
 
 	slices.SortFunc(slice, func(a, b T) int {
 		aValue, bValue := f(a), f(b)
@@ -392,7 +403,7 @@ func (c *Collection[T]) GroupBy(keySelector func(x T) any) map[any]*Collection[T
 		key := keySelector(v)
 		if group, exists := groups[key]; exists {
 			// Add to existing group
-			current := group.Slice()
+			current := group.ToSlice()
 			current = append(current, v)
 			groups[key] = NewFromSlice(current)
 		} else {
@@ -453,8 +464,8 @@ func (c *Collection[T]) Except(other *Collection[T], equals func(a, b T) bool) *
 
 // Equals compares collection with another to determine if they are equal
 func (c *Collection[T]) Equals(other *Collection[T], equals func(a, b T) bool) bool {
-	iter1 := c.Slice()
-	iter2 := other.Slice()
+	iter1 := c.ToSlice()
+	iter2 := other.ToSlice()
 
 	if len(iter1) != len(iter2) {
 		return false
@@ -471,7 +482,7 @@ func (c *Collection[T]) Equals(other *Collection[T], equals func(a, b T) bool) b
 
 // Reverse returns a collection with the elements in reverse order
 func (c *Collection[T]) Reverse() *Collection[T] {
-	slice := c.Slice()
+	slice := c.ToSlice()
 	slices.Reverse(slice)
 	return NewFromSlice(slice)
 }
@@ -587,6 +598,18 @@ func (c *Collection[T]) ElementAtOrError(index int) (T, error) {
 	return val, nil
 }
 
+// FindIndex returns the index of the first element that satisfies the predicate
+func (c *Collection[T]) FindIndex(predicate func(x T) bool) int {
+	index := 0
+	for item := range *c {
+		if predicate(item) {
+			return index
+		}
+		index++
+	}
+	return -1
+}
+
 // Partition divides the collection into two collections based on a predicate function.
 // The first collection contains elements that satisfy the predicate, the second contains elements that don't.
 func (c *Collection[T]) Partition(predicate func(x T) bool) (*Collection[T], *Collection[T]) {
@@ -612,8 +635,8 @@ func (c *Collection[T]) Partition(predicate func(x T) bool) (*Collection[T], *Co
 	return NewFromSlice(matches), NewFromSlice(nonMatches)
 }
 
-// Slice converts the collection to a slice
-func (c *Collection[T]) Slice() []T {
+// ToSlice converts the collection to a slice
+func (c *Collection[T]) ToSlice() []T {
 	var val []T
 	for t := range *c {
 		val = append(val, t)
@@ -621,13 +644,25 @@ func (c *Collection[T]) Slice() []T {
 	return val
 }
 
-// StringMap converts the collection to a map with string keys
-func (c *Collection[T]) StringMap(keySelector func(x T) string) map[string]T {
+// ToStringMap converts the collection to a map with string keys
+func (c *Collection[T]) ToStringMap(keySelector func(x T) string) map[string]T {
 	m := make(map[string]T)
 	for v := range *c {
 		m[keySelector(v)] = v
 	}
 	return m
+}
+
+// ToChannel converts the collection to a channel
+func (c *Collection[T]) ToChannel() <-chan T {
+	ch := make(chan T)
+	go func() {
+		defer close(ch)
+		for item := range *c {
+			ch <- item
+		}
+	}()
+	return ch
 }
 
 // Zip combines two collections into one by applying a function pairwise
@@ -711,15 +746,18 @@ func Map[T any, K comparable, V any](c *Collection[T], keySelector func(x T) K, 
 	return m
 }
 
-// Average calculates the average value of a numeric collection
-func Average[T NumericalTypes](c *Collection[T]) *big.Float {
+// AverageOrError calculates the average or returns an error if empty
+func AverageOrError[T NumericalTypes](c *Collection[T]) (*big.Float, error) {
 	sum := float64(0)
 	count := 0
 	for t := range *c {
 		sum += float64(t)
 		count++
 	}
-	return big.NewFloat(sum / float64(count))
+	if count == 0 {
+		return nil, errors.New("cannot compute average of empty collection")
+	}
+	return big.NewFloat(sum / float64(count)), nil
 }
 
 // Sum calculates the sum of all elements in the collection and returns it as a big.Float
