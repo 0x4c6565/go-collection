@@ -233,10 +233,10 @@ func TestSelectMany(t *testing.T) {
 	})
 }
 
-func TestMap(t *testing.T) {
+func TestToMap(t *testing.T) {
 	t.Run("Ints", func(t *testing.T) {
 		c := collection.NewFromSlice([]string{"1", "2", "3"})
-		v := collection.Map(c, func(x string) int {
+		v := collection.ToMap(c, func(x string) int {
 			i, _ := strconv.Atoi(x)
 			return i
 		}, func(x string) string {
@@ -261,7 +261,7 @@ func TestMap(t *testing.T) {
 			{Property1: "c", Property2: 3},
 		})
 
-		v := collection.Map(c, func(x teststruct) string {
+		v := collection.ToMap(c, func(x teststruct) string {
 			return x.Property1
 		}, func(x teststruct) int {
 			return x.Property2

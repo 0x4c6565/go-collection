@@ -738,7 +738,7 @@ func Flatten[T any](c *Collection[*Collection[T]]) *Collection[T] {
 }
 
 // Map converts the collection to a map
-func Map[T any, K comparable, V any](c *Collection[T], keySelector func(x T) K, valueSelector func(x T) V) map[K]V {
+func ToMap[T any, K comparable, V any](c *Collection[T], keySelector func(x T) K, valueSelector func(x T) V) map[K]V {
 	m := make(map[K]V)
 	for v := range *c {
 		m[keySelector(v)] = valueSelector(v)

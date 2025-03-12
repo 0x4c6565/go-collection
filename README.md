@@ -114,7 +114,7 @@ for category, group := range groups {
 
 ### Conversion
 
-- `Map[T any, K comparable, V any](c *Collection[T], keySelector func(x T) K, valueSelector func(x T) V) map[K]V` - Converts a collection to a map
+- `ToMap[T any, K comparable, V any](c *Collection[T], keySelector func(x T) K, valueSelector func(x T) V) map[K]V` - Converts a collection to a map
 
 ### Numeric Operations
 
