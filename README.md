@@ -154,7 +154,7 @@ for category, group := range groups {
 - `LastOrError() (T, error)` - Get the last element or error
 - `ElementAt(index int) (T, bool)` - Get the element at index or false
 - `ElementAtOrError(index int) (T, error)` - Get the element at index or error
-- `Partition(predicate func(x T) bool) (*Collection[T], *Collection[T])` - Devide collection into two based on predicate. The first collection contains elements that satisfy the predicate, the second contains elements that don't
+- `Partition(predicate func(x T) bool) (*Collection[T], *Collection[T])` - Divide collection into two based on predicate. The first collection contains elements that satisfy the predicate, the second contains elements that don't
 - `ForEach(action func(v T))` - Execute action against each element. Consider iterating over collection instead
 - `ParallelForEach(ctx context.Context, action func(ctx context.Context, v T) error, concurrency int) error` - Execute action against each element in parallel
 
