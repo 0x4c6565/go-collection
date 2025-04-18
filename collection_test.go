@@ -75,6 +75,16 @@ func TestNewFromChannel(t *testing.T) {
 	assert.Equal(t, "a", v)
 }
 
+func TestNewFromRange(t *testing.T) {
+	c := collection.NewFromRange(1, 5)
+	f, _ := c.First()
+	l, _ := c.Last()
+
+	assert.Equal(t, 1, f)
+	assert.Equal(t, 5, l)
+	assert.Equal(t, c.Len(), 5)
+}
+
 func TestWhere(t *testing.T) {
 	c := collection.NewFromSlice([]string{"a", "b", "c"})
 	t.Run("Elements", func(t *testing.T) {
@@ -100,6 +110,27 @@ func TestWhere(t *testing.T) {
 		}) {
 			break
 		}
+	})
+}
+
+func TestFind(t *testing.T) {
+	c := collection.NewFromSlice([]string{"a", "b", "c"})
+	t.Run("Element", func(t *testing.T) {
+		v, ok := c.Find(func(x string) bool {
+			return x == "a"
+		})
+
+		assert.True(t, ok)
+		assert.Equal(t, "a", v)
+	})
+
+	t.Run("NoElement", func(t *testing.T) {
+		v, ok := c.Find(func(x string) bool {
+			return x == "z"
+		})
+
+		assert.False(t, ok)
+		assert.Equal(t, "", v)
 	})
 }
 
@@ -362,6 +393,22 @@ func TestLastOrError(t *testing.T) {
 	})
 }
 
+func TestLen(t *testing.T) {
+	t.Run("NonEmptyCollection", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c"})
+		v := c.Len()
+
+		assert.Equal(t, 3, v)
+	})
+
+	t.Run("EmptyCollection", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{})
+		v := c.Len()
+
+		assert.Equal(t, 0, v)
+	})
+}
+
 func TestCount(t *testing.T) {
 	t.Run("NonEmptyCollection", func(t *testing.T) {
 		c := collection.NewFromSlice([]string{"a", "b", "c"})
@@ -392,6 +439,22 @@ func TestContains(t *testing.T) {
 		v := c.Contains(func(x string) bool {
 			return x == "z"
 		})
+
+		assert.False(t, v)
+	})
+}
+
+func TestIsEmpty(t *testing.T) {
+	t.Run("Empty", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{})
+		v := c.IsEmpty()
+
+		assert.True(t, v)
+	})
+
+	t.Run("NotEmpty", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a"})
+		v := c.IsEmpty()
 
 		assert.False(t, v)
 	})
@@ -1750,6 +1813,30 @@ func TestParallelForEach(t *testing.T) {
 		)
 
 		assert.IsType(t, context.Canceled, err)
+	})
+}
+
+func TestPeek(t *testing.T) {
+	t.Run("Peek", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 3})
+
+		var results []int
+		c.Peek(func(x int) {
+			results = append(results, x)
+		}).ToSlice()
+
+		assert.Equal(t, 3, len(results))
+		assert.Equal(t, 1, results[0])
+		assert.Equal(t, 2, results[1])
+		assert.Equal(t, 3, results[2])
+	})
+
+	t.Run("Break", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 3})
+
+		for range *c.Peek(func(x int) {}) {
+			break
+		}
 	})
 }
 

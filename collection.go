@@ -67,6 +67,21 @@ func NewFromChannel[T any](ch <-chan T) *Collection[T] {
 	}))
 }
 
+// NewFromRange creates a new Collection from a range of integers
+func NewFromRange(start, count int) *Collection[int] {
+	if count < 0 {
+		return NewFromSlice([]int{})
+	}
+
+	return New[int](iter.Seq[int](func(yield func(int) bool) {
+		for i := 0; i < count; i++ {
+			if !yield(start + i) {
+				return
+			}
+		}
+	}))
+}
+
 // Where filters the collection to only elements satisfying the predicate function
 func (c *Collection[T]) Where(f func(x T) bool) *Collection[T] {
 	return New[T](iter.Seq[T](func(yield func(T) bool) {
@@ -76,6 +91,17 @@ func (c *Collection[T]) Where(f func(x T) bool) *Collection[T] {
 			}
 		}
 	}))
+}
+
+// Find returns the first element that matches the given predicate.
+// If no element matches, it returns the zero value and false.
+func (c *Collection[T]) Find(f func(T) bool) (found T, ok bool) {
+	for v := range *c {
+		if f(v) {
+			return v, true
+		}
+	}
+	return
 }
 
 // Select transforms each element in the collection using the selector function
@@ -165,8 +191,8 @@ func (c *Collection[T]) SingleOrError() (element T, err error) {
 	return
 }
 
-// Count returns the number of elements in the collection
-func (c *Collection[T]) Count() int {
+// Len returns the number of elements in the collection
+func (c *Collection[T]) Len() int {
 	count := 0
 	for range *c {
 		count++
@@ -174,6 +200,9 @@ func (c *Collection[T]) Count() int {
 
 	return count
 }
+
+// Count is an alias for Len
+func (c *Collection[T]) Count() int { return c.Len() }
 
 // Contains returns true if any element satisfies the predicate
 func (c *Collection[T]) Contains(f func(x T) bool) bool {
@@ -183,6 +212,14 @@ func (c *Collection[T]) Contains(f func(x T) bool) bool {
 		}
 	}
 	return false
+}
+
+// IsEmpty returns true if the collection is empty
+func (c *Collection[T]) IsEmpty() bool {
+	for range *c {
+		return false
+	}
+	return true
 }
 
 func (c *Collection[T]) Shuffle() *Collection[T] {
@@ -604,6 +641,19 @@ func (c *Collection[T]) ParallelForEach(ctx context.Context, action func(ctx con
 	return g.Wait()
 }
 
+// Peek executes an action for each element in the collection and returns the collection
+func (c *Collection[T]) Peek(action func(T)) *Collection[T] {
+	return New[T](iter.Seq[T](func(yield func(T) bool) {
+		for v := range *c {
+			action(v)
+			if !yield(v) {
+				return
+			}
+		}
+	}))
+}
+
+// ElementAt returns the element at the specified index or a default value if index is out of range
 func (c *Collection[T]) ElementAt(index int) (T, bool) {
 	var d T
 	if index < 0 {
@@ -648,7 +698,7 @@ func (c *Collection[T]) Partition(predicate func(x T) bool) (*Collection[T], *Co
 
 	// Pre-allocate slices to improve performance for large collections
 	// Allocate with a conservative initial capacity
-	initialCapacity := c.Count() / 2
+	initialCapacity := c.Len() / 2
 	if initialCapacity > 0 {
 		matches = make([]T, 0, initialCapacity)
 		nonMatches = make([]T, 0, initialCapacity)

@@ -100,6 +100,7 @@ for category, group := range groups {
 - `NewFromItems[T any](s ...T) *Collection[T]` - Create a collection from given items
 - `NewFromStringMap[T any](m map[string]T) *Collection[T]` - Create a collection from a string map
 - `NewFromChannel[T any](ch <-chan T) *Collection[T]` - Create a collection from a channel
+- `NewFromRange(start, count int) *Collection[int]` - Create a collection from a range of integers
 
 ### Filtering and Projection
 
@@ -130,6 +131,7 @@ for category, group := range groups {
 ### Filtering and Projection
 
 - `Where(f func(x T) bool) *Collection[T]` - Filter elements based on a predicate
+- `Find(f func(T) bool) (T, bool)` - Find first element by given predicate, returning boolean indicating whether found
 - `Select(f func(x T) any) *Collection[any]` - Transform elements using a selector function
 - `SelectMany(f func(x T) *Collection[any]) *Collection[any]` - Project and flatten collections
 - `Take(n int) *Collection[T]` - Get only the first n elements
@@ -160,12 +162,14 @@ for category, group := range groups {
 - `Partition(predicate func(x T) bool) (*Collection[T], *Collection[T])` - Divide collection into two based on predicate. The first collection contains elements that satisfy the predicate, the second contains elements that don't
 - `ForEach(action func(v T))` - Execute action against each element. Consider iterating over collection instead
 - `ParallelForEach(ctx context.Context, action func(ctx context.Context, v T) error, concurrency int) error` - Execute action against each element in parallel
+- `Peek(action func(T)) *Collection[T]` - Executes an action for each element in the collection and returns the collection
 
 ### Boolean Operations
 
 - `All(f func(x T) bool) bool` - Check if all elements satisfy a condition
 - `Any(f func(x T) bool) bool` - Check if any element satisfies a condition
 - `Contains(f func(x T) bool) bool` - Check if collection contains elements satisfying a condition
+- `IsEmpty() bool` - Returns boolean indicating if the collection is empty
 - `Equals(other *Collection[T], equals func(a, b T) bool) bool` - compares collection with another to determine if they are equal
 
 ### Set Operations
@@ -179,7 +183,8 @@ for category, group := range groups {
 
 ### Aggregation
 
-- `Count() int` - Count elements in the collection
+- `Len() int` - Number of elements in the collection
+- `Count() int` - Alias for Len()
 - `GroupBy(keySelector func(x T) any) map[any]*Collection[T]` - Group elements by key
 - `Chunk(size int) []*Collection[T]` Split collection into chunks of the specified size
 - `Aggregate(seed any, accumulator func(result any, item T) any) any` - Applies an accumulator function over collection
