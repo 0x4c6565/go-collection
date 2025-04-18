@@ -85,6 +85,23 @@ func TestNewFromRange(t *testing.T) {
 	assert.Equal(t, c.Len(), 5)
 }
 
+func TestNewFromJSON(t *testing.T) {
+	t.Run("Valid", func(t *testing.T) {
+		data := []byte(`["a", "b", "c"]`)
+		c, err := collection.NewFromJSON[string](data)
+
+		assert.Nil(t, err)
+		assert.Equal(t, 3, c.Count())
+	})
+
+	t.Run("InvalidJSON", func(t *testing.T) {
+		data := []byte(`invalid`)
+		_, err := collection.NewFromJSON[string](data)
+
+		assert.NotNil(t, err)
+	})
+}
+
 func TestWhere(t *testing.T) {
 	c := collection.NewFromSlice([]string{"a", "b", "c"})
 	t.Run("Elements", func(t *testing.T) {
@@ -2549,4 +2566,50 @@ func TestToChannel(t *testing.T) {
 	}
 
 	assert.Equal(t, []string{"a", "b", "c"}, results)
+}
+
+func TestToJSON(t *testing.T) {
+	c := collection.NewFromSlice([]string{"a", "b", "c"})
+	v, err := c.ToJSON()
+
+	assert.Nil(t, err)
+	assert.Equal(t, `["a","b","c"]`, string(v))
+}
+
+func TestPop(t *testing.T) {
+	t.Run("Pop", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 3})
+		v, err := c.Pop()
+
+		assert.Nil(t, err)
+		assert.Equal(t, 3, v)
+		assert.Equal(t, 2, len(c.ToSlice()))
+	})
+
+	t.Run("PopEmpty", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{})
+		_, err := c.Pop()
+
+		assert.NotNil(t, err)
+		assert.Equal(t, collection.ErrEmptyCollection, err)
+	})
+}
+
+func TestShift(t *testing.T) {
+	t.Run("Shift", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 3})
+		v, err := c.Shift()
+
+		assert.Nil(t, err)
+		assert.Equal(t, 1, v)
+		assert.Equal(t, 2, len(c.ToSlice()))
+	})
+
+	t.Run("ShiftEmpty", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{})
+		_, err := c.Shift()
+
+		assert.NotNil(t, err)
+		assert.Equal(t, collection.ErrEmptyCollection, err)
+	})
 }

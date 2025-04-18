@@ -2,7 +2,9 @@ package collection
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"iter"
 	"math/big"
 	"math/rand/v2"
@@ -80,6 +82,16 @@ func NewFromRange(start, count int) *Collection[int] {
 			}
 		}
 	}))
+}
+
+// NewFromJSON deserializes JSON into a new collection
+func NewFromJSON[T any](data []byte) (c *Collection[T], err error) {
+	var items []T
+	if err := json.Unmarshal(data, &items); err != nil {
+		return c, fmt.Errorf("failed to unmarshal Collection: %w", err)
+	}
+	c = NewFromSlice(items)
+	return
 }
 
 // Where filters the collection to only elements satisfying the predicate function
@@ -618,6 +630,9 @@ func (c *Collection[T]) ForEach(action func(v T)) {
 	}
 }
 
+// Each is an alias for ForEach
+func (c *Collection[T]) Each(action func(v T)) { c.ForEach(action) }
+
 // ParallelForEach executes an action for each element in the collection in parallel
 func (c *Collection[T]) ParallelForEach(ctx context.Context, action func(ctx context.Context, v T) error, concurrency int) error {
 	if concurrency <= 0 {
@@ -743,6 +758,33 @@ func (c *Collection[T]) ToChannel() <-chan T {
 		}
 	}()
 	return ch
+}
+
+// ToJSON serializes the collection to JSON
+func (c *Collection[T]) ToJSON() ([]byte, error) {
+	return json.Marshal(c.ToSlice())
+}
+
+// Pop removes the last element from collection and returns it
+func (c *Collection[T]) Pop() (d T, err error) {
+	s := c.ToSlice()
+	if len(s) == 0 {
+		return d, ErrEmptyCollection
+	}
+	last := s[len(s)-1]
+	*c = *NewFromSlice(s[:len(s)-1])
+	return last, nil
+}
+
+// Shift removes the first element from collection and returns it
+func (c *Collection[T]) Shift() (d T, err error) {
+	s := c.ToSlice()
+	if len(s) == 0 {
+		return d, ErrEmptyCollection
+	}
+	first := s[0]
+	*c = *NewFromSlice(s[1:])
+	return first, nil
 }
 
 // Zip combines two collections into one by applying a function pairwise

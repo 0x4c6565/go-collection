@@ -101,6 +101,7 @@ for category, group := range groups {
 - `NewFromStringMap[T any](m map[string]T) *Collection[T]` - Create a collection from a string map
 - `NewFromChannel[T any](ch <-chan T) *Collection[T]` - Create a collection from a channel
 - `NewFromRange(start, count int) *Collection[int]` - Create a collection from a range of integers
+- `NewFromJSON[T any](data []byte) (c *Collection[T], err error)` - Create a collection from a JSON string
 
 ### Filtering and Projection
 
@@ -130,7 +131,7 @@ for category, group := range groups {
 
 ### Filtering and Projection
 
-- `Where(f func(x T) bool) *Collection[T]` - Filter elements based on a predicate
+- `Where(f func(x T) bool) *Collection[T]` - Filter elements by given predicate
 - `Find(f func(T) bool) (T, bool)` - Find first element by given predicate, returning boolean indicating whether found
 - `Select(f func(x T) any) *Collection[any]` - Transform elements using a selector function
 - `SelectMany(f func(x T) *Collection[any]) *Collection[any]` - Project and flatten collections
@@ -161,8 +162,11 @@ for category, group := range groups {
 - `IndexOf(predicate func(x T) bool) int` - Get the index of element that satisfies the predicate, or return `-1`
 - `Partition(predicate func(x T) bool) (*Collection[T], *Collection[T])` - Divide collection into two based on predicate. The first collection contains elements that satisfy the predicate, the second contains elements that don't
 - `ForEach(action func(v T))` - Execute action against each element. Consider iterating over collection instead
+- `Each(action func(v T))` - Alias for ForEach()
 - `ParallelForEach(ctx context.Context, action func(ctx context.Context, v T) error, concurrency int) error` - Execute action against each element in parallel
 - `Peek(action func(T)) *Collection[T]` - Executes an action for each element in the collection and returns the collection
+- `Pop() (d T, err error)` - Removes the last element from collection and returns it
+- `Shift() (d T, err error)` - Removes the first element from collection and returns it
 
 ### Boolean Operations
 
@@ -194,6 +198,7 @@ for category, group := range groups {
 - `ToSlice() []T` - Convert collection to a slice
 - `ToStringMap(keySelector func(x T) string) map[string]T` - Convert collection to a map with string keys
 - `ToChannel() <-chan T` - Convert collection to a channel
+- `ToJSON() ([]byte, error)` - Serialise collection into JSON string
 
 ## Errors
 
