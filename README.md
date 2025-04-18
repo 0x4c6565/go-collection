@@ -165,8 +165,6 @@ for category, group := range groups {
 - `Each(action func(v T))` - Alias for ForEach()
 - `ParallelForEach(ctx context.Context, action func(ctx context.Context, v T) error, concurrency int) error` - Execute action against each element in parallel
 - `Peek(action func(T)) *Collection[T]` - Executes an action for each element in the collection and returns the collection
-- `Pop() (d T, err error)` - Removes the last element from collection and returns it
-- `Shift() (d T, err error)` - Removes the first element from collection and returns it
 
 ### Boolean Operations
 
@@ -184,6 +182,8 @@ for category, group := range groups {
 - `Concat(other *Collection[T]) *Collection[T]` - Concatenate collections
 - `Append(e T) *Collection[T]` - Add element to the end of the collection
 - `Prepend(e T) *Collection[T]` - Add element to the beginning of the collection
+- `Pop() (d T, err error)` - Removes the last element from collection and returns it
+- `Shift() (d T, err error)` - Removes the first element from collection and returns it
 
 ### Aggregation
 
