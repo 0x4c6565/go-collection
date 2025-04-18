@@ -363,10 +363,19 @@ func TestLastOrError(t *testing.T) {
 }
 
 func TestCount(t *testing.T) {
-	c := collection.NewFromSlice([]string{"a", "b", "c"})
-	v := c.Count()
+	t.Run("NonEmptyCollection", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c"})
+		v := c.Count()
 
-	assert.Equal(t, 3, v)
+		assert.Equal(t, 3, v)
+	})
+
+	t.Run("EmptyCollection", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{})
+		v := c.Count()
+
+		assert.Equal(t, 0, v)
+	})
 }
 
 func TestContains(t *testing.T) {
@@ -409,6 +418,32 @@ func TestSingle(t *testing.T) {
 		_, ok := c.Single()
 
 		assert.False(t, ok)
+	})
+}
+
+func TestSingleOrError(t *testing.T) {
+	t.Run("OneElement", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a"})
+		v, err := c.SingleOrError()
+
+		assert.Nil(t, err)
+		assert.Equal(t, "a", v)
+	})
+
+	t.Run("MultipleElements", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b"})
+		_, err := c.SingleOrError()
+
+		assert.NotNil(t, err)
+		assert.Equal(t, collection.ErrNotExactlyOneElement, err)
+	})
+
+	t.Run("NoElements", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{})
+		_, err := c.SingleOrError()
+
+		assert.NotNil(t, err)
+		assert.Equal(t, collection.ErrNotExactlyOneElement, err)
 	})
 }
 
@@ -1820,6 +1855,53 @@ func TestElementAtOrError(t *testing.T) {
 	})
 }
 
+func TestIndexOf(t *testing.T) {
+	t.Run("ElementFound", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{10, 20, 30, 40})
+		index := c.IndexOf(func(x int) bool {
+			return x == 30
+		})
+
+		assert.Equal(t, 2, index)
+	})
+
+	t.Run("ElementNotFound", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{10, 20, 30, 40})
+		index := c.IndexOf(func(x int) bool {
+			return x == 50
+		})
+
+		assert.Equal(t, -1, index)
+	})
+
+	t.Run("EmptyCollection", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{})
+		index := c.IndexOf(func(x int) bool {
+			return x == 10
+		})
+
+		assert.Equal(t, -1, index)
+	})
+
+	t.Run("FirstElement", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{10, 20, 30, 40})
+		index := c.IndexOf(func(x int) bool {
+			return x == 10
+		})
+
+		assert.Equal(t, 0, index)
+	})
+
+	t.Run("LastElement", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{10, 20, 30, 40})
+		index := c.IndexOf(func(x int) bool {
+			return x == 40
+		})
+
+		assert.Equal(t, 3, index)
+	})
+}
+
 func TestPartition(t *testing.T) {
 	t.Run("Partitions", func(t *testing.T) {
 		c := collection.NewFromSlice([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
@@ -2004,6 +2086,48 @@ func TestFlatten(t *testing.T) {
 		for range *collection.Flatten(collections) {
 			break
 		}
+	})
+}
+
+func TestMode(t *testing.T) {
+	t.Run("SingleMode", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 2, 3, 4})
+		mode, err := collection.Mode(c)
+
+		assert.Nil(t, err)
+		assert.Equal(t, 2, mode)
+	})
+
+	t.Run("MultipleModes_FirstEncountered", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 2, 3, 3})
+		mode, err := collection.Mode(c)
+
+		assert.Nil(t, err)
+		assert.Equal(t, 2, mode) // First encountered mode
+	})
+
+	t.Run("AllUnique", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 3, 4, 5})
+		mode, err := collection.Mode(c)
+
+		assert.Nil(t, err)
+		assert.Equal(t, 1, mode) // First element is returned
+	})
+
+	t.Run("EmptyCollection", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{})
+		_, err := collection.Mode(c)
+
+		assert.NotNil(t, err)
+		assert.Equal(t, collection.ErrEmptyCollection, err)
+	})
+
+	t.Run("StringElements", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"apple", "banana", "apple", "cherry", "banana", "banana"})
+		mode, err := collection.Mode(c)
+
+		assert.Nil(t, err)
+		assert.Equal(t, "banana", mode)
 	})
 }
 
@@ -2252,6 +2376,52 @@ func TestMax(t *testing.T) {
 		v := collection.Max(c)
 
 		assert.Equal(t, -1, v)
+	})
+}
+
+func TestMedian(t *testing.T) {
+	t.Run("OddNumberOfElements", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{3, 1, 4, 2, 5})
+		median, err := collection.Median(c)
+		f, _ := median.Float64()
+
+		assert.Nil(t, err)
+		assert.Equal(t, 3.0, f)
+	})
+
+	t.Run("EvenNumberOfElements", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{3, 1, 4, 2})
+		median, err := collection.Median(c)
+		f, _ := median.Float64()
+
+		assert.Nil(t, err)
+		assert.Equal(t, 2.5, f)
+	})
+
+	t.Run("SingleElement", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{42})
+		median, err := collection.Median(c)
+		f, _ := median.Float64()
+
+		assert.Nil(t, err)
+		assert.Equal(t, 42.0, f)
+	})
+
+	t.Run("EmptyCollection", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{})
+		_, err := collection.Median(c)
+
+		assert.NotNil(t, err)
+		assert.Equal(t, "cannot compute median of empty collection", err.Error())
+	})
+
+	t.Run("FloatElements", func(t *testing.T) {
+		c := collection.NewFromSlice([]float64{3.5, 1.2, 4.8, 2.1})
+		median, err := collection.Median(c)
+		f, _ := median.Float64()
+
+		assert.Nil(t, err)
+		assert.Equal(t, 2.8, f)
 	})
 }
 

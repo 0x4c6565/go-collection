@@ -15,6 +15,8 @@ import (
 
 var ErrNoElement = errors.New("no element")
 var ErrIndexOutOfRange = errors.New("index out of range")
+var ErrEmptyCollection = errors.New("empty collection")
+var ErrNotExactlyOneElement = errors.New("not exactly one element")
 
 type Collection[T any] func(yield func(T) bool)
 
@@ -130,6 +132,34 @@ func (c *Collection[T]) LastOrError() (last T, err error) {
 	last, ok := c.Last()
 	if !ok {
 		return last, ErrNoElement
+	}
+
+	return
+}
+
+// Single returns the only element in the collection and a boolean indicating if an element was found
+func (c *Collection[T]) Single() (element T, ok bool) {
+	count := 0
+	for v := range *c {
+		if count > 0 {
+			return
+		}
+		element = v
+		count++
+	}
+
+	if count == 1 {
+		return element, true
+	}
+
+	return
+}
+
+// SingleOrError returns the only element in the collection or an error if not exactly one element
+func (c *Collection[T]) SingleOrError() (element T, err error) {
+	element, ok := c.Single()
+	if !ok {
+		return element, ErrNotExactlyOneElement
 	}
 
 	return
@@ -598,8 +628,8 @@ func (c *Collection[T]) ElementAtOrError(index int) (T, error) {
 	return val, nil
 }
 
-// FindIndex returns the index of the first element that satisfies the predicate
-func (c *Collection[T]) FindIndex(predicate func(x T) bool) int {
+// IndexOf returns the index of the first element that satisfies the predicate
+func (c *Collection[T]) IndexOf(predicate func(x T) bool) int {
 	index := 0
 	for item := range *c {
 		if predicate(item) {
@@ -737,6 +767,35 @@ func Flatten[T any](c *Collection[*Collection[T]]) *Collection[T] {
 	}))
 }
 
+// Mode returns the most frequently occurring element in the collection.
+// If multiple values have the same frequency, the first one is returned
+func Mode[T comparable](c *Collection[T]) (mode T, err error) {
+	slice := c.ToSlice()
+	if len(slice) == 0 {
+		return mode, ErrEmptyCollection
+	}
+
+	freq := make(map[T]int)
+	var keys []T
+	for _, v := range slice {
+		if _, ok := freq[v]; !ok {
+			keys = append(keys, v)
+		}
+		freq[v]++
+	}
+
+	var maxCount int
+	for _, key := range keys {
+		count := freq[key]
+		if count > maxCount {
+			mode = key
+			maxCount = count
+		}
+	}
+
+	return
+}
+
 // Map converts the collection to a map
 func ToMap[T any, K comparable, V any](c *Collection[T], keySelector func(x T) K, valueSelector func(x T) V) map[K]V {
 	m := make(map[K]V)
@@ -792,6 +851,22 @@ func Max[T NumericalTypes](c *Collection[T]) T {
 		first = false
 	}
 	return max
+}
+
+// Median calculates the median of the collection
+func Median[T NumericalTypes](c *Collection[T]) (*big.Float, error) {
+	slice := c.ToSlice()
+	if len(slice) == 0 {
+		return nil, errors.New("cannot compute median of empty collection")
+	}
+
+	slices.Sort(slice)
+
+	mid := len(slice) / 2
+	if len(slice)%2 == 0 {
+		return big.NewFloat(float64(slice[mid-1]+slice[mid]) / 2), nil
+	}
+	return big.NewFloat(float64(slice[mid])), nil
 }
 
 // Select transforms each element in the collection using the selector function

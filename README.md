@@ -111,6 +111,7 @@ for category, group := range groups {
 - `Zip[T1, T2, TResult any](c1 *Collection[T1], c2 *Collection[T2], zipper func(T1, T2) TResult) *Collection[TResult]` - Combines two collections into one by applying a function pairwise
 - `Join[TOuter, TInner, TKey comparable, TResult any](outer *Collection[TOuter], inner *Collection[TInner], outerKeySelector func(TOuter) TKey, innerKeySelector func(TInner) TKey, resultSelector func(TOuter, TInner) TResult) *Collection[TResult]` - Performs an inner join on two collections based on matching keys
 - `Flatten[T any](c *Collection[*Collection[T]]) *Collection[T]` - Flattens a collection of collections into a single collection
+- `Mode[T comparable](c *Collection[T]) (T, error)` - Return most frequently occurring element
 
 ### Conversion
 
@@ -122,6 +123,7 @@ for category, group := range groups {
 - `Sum[T NumericalTypes](c *Collection[T]) *big.Float` - Calculate sum of numeric collection
 - `Min[T NumericalTypes](c *Collection[T]) T` - Calculate the smallest value in the numeric collection
 - `Max[T NumericalTypes](c *Collection[T]) T` - Calculate the largest value in the numeric collection
+- `Median[T NumericalTypes](c *Collection[T]) (*big.Float, error)` - Calculate the median value in the numerical collection
 
 ## Available Collection Methods
 
@@ -154,6 +156,7 @@ for category, group := range groups {
 - `LastOrError() (T, error)` - Get the last element or error
 - `ElementAt(index int) (T, bool)` - Get the element at index or false
 - `ElementAtOrError(index int) (T, error)` - Get the element at index or error
+- `IndexOf(predicate func(x T) bool) int` - Get the index of element that satisfies the predicate, or return `-1`
 - `Partition(predicate func(x T) bool) (*Collection[T], *Collection[T])` - Divide collection into two based on predicate. The first collection contains elements that satisfy the predicate, the second contains elements that don't
 - `ForEach(action func(v T))` - Execute action against each element. Consider iterating over collection instead
 - `ParallelForEach(ctx context.Context, action func(ctx context.Context, v T) error, concurrency int) error` - Execute action against each element in parallel
