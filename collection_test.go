@@ -130,6 +130,35 @@ func TestWhere(t *testing.T) {
 	})
 }
 
+func TestReject(t *testing.T) {
+	c := collection.NewFromSlice([]string{"a", "b", "c"})
+	t.Run("Elements", func(t *testing.T) {
+		v := c.Reject(func(x string) bool {
+			return x == "a"
+		}).ToSlice()
+
+		assert.Len(t, v, 2)
+		assert.Equal(t, "b", v[0])
+		assert.Equal(t, "c", v[1])
+	})
+
+	t.Run("NoElements", func(t *testing.T) {
+		v := c.Reject(func(x string) bool {
+			return x == "z"
+		}).ToSlice()
+
+		assert.Len(t, v, 3)
+	})
+
+	t.Run("Break", func(t *testing.T) {
+		for range *c.Reject(func(x string) bool {
+			return x == "a"
+		}) {
+			break
+		}
+	})
+}
+
 func TestFind(t *testing.T) {
 	c := collection.NewFromSlice([]string{"a", "b", "c"})
 	t.Run("Element", func(t *testing.T) {

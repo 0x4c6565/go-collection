@@ -132,6 +132,7 @@ for category, group := range groups {
 ### Filtering and Projection
 
 - `Where(f func(x T) bool) *Collection[T]` - Filter elements by given predicate
+- `Reject(f func(x T) bool) *Collection[T]` - Filter elements by given predicate
 - `Find(f func(T) bool) (T, bool)` - Find first element by given predicate, returning boolean indicating whether found
 - `Select(f func(x T) any) *Collection[any]` - Transform elements using a selector function
 - `SelectMany(f func(x T) *Collection[any]) *Collection[any]` - Project and flatten collections

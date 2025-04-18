@@ -105,6 +105,13 @@ func (c *Collection[T]) Where(f func(x T) bool) *Collection[T] {
 	}))
 }
 
+// Reject filters the collection to only elements not satisfying the predicate function
+func (c *Collection[T]) Reject(f func(x T) bool) *Collection[T] {
+	return c.Where(func(x T) bool {
+		return !f(x)
+	})
+}
+
 // Find returns the first element that matches the given predicate.
 // If no element matches, it returns the zero value and false.
 func (c *Collection[T]) Find(f func(T) bool) (found T, ok bool) {
