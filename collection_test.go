@@ -53,12 +53,12 @@ func TestNewFromItems(t *testing.T) {
 	assert.Equal(t, "a", v)
 }
 
-func TestNewFromStringMap(t *testing.T) {
+func TestNewFromMap(t *testing.T) {
 	m := map[string]string{
 		"key1": "value1",
 		"key2": "value2",
 	}
-	c := collection.NewFromStringMap(m)
+	c := collection.NewFromMap(m)
 	v, _ := c.First()
 
 	assert.Contains(t, []string{"value1", "value2"}, v)
@@ -287,8 +287,6 @@ func TestToMap(t *testing.T) {
 		v := collection.ToMap(c, func(x string) int {
 			i, _ := strconv.Atoi(x)
 			return i
-		}, func(x string) string {
-			return x
 		})
 
 		assert.Len(t, v, 3)
@@ -299,26 +297,24 @@ func TestToMap(t *testing.T) {
 
 	t.Run("Structs", func(t *testing.T) {
 		type teststruct struct {
-			Property1 string
-			Property2 int
+			Animal string
+			Name   string
 		}
 
 		c := collection.NewFromSlice([]teststruct{
-			{Property1: "a", Property2: 1},
-			{Property1: "b", Property2: 2},
-			{Property1: "c", Property2: 3},
+			{Animal: "Cow", Name: "Daisy"},
+			{Animal: "Chicken", Name: "Bert"},
+			{Animal: "Goose", Name: "Bruce"},
 		})
 
 		v := collection.ToMap(c, func(x teststruct) string {
-			return x.Property1
-		}, func(x teststruct) int {
-			return x.Property2
+			return x.Animal
 		})
 
 		assert.Len(t, v, 3)
-		assert.Equal(t, 1, v["a"])
-		assert.Equal(t, 2, v["b"])
-		assert.Equal(t, 3, v["c"])
+		assert.Equal(t, "Daisy", v["Cow"].Name)
+		assert.Equal(t, "Bert", v["Chicken"].Name)
+		assert.Equal(t, "Bruce", v["Goose"].Name)
 	})
 }
 
@@ -2536,7 +2532,7 @@ func TestToSlice(t *testing.T) {
 	assert.Equal(t, []string{"a", "b", "c"}, v)
 }
 
-func TestToStringMap(t *testing.T) {
+func TestCollectionToMap(t *testing.T) {
 	type person struct {
 		Name string
 		Age  int
@@ -2546,7 +2542,7 @@ func TestToStringMap(t *testing.T) {
 		{Name: "Bob", Age: 30},
 		{Name: "Charlie", Age: 35},
 	})
-	v := c.ToStringMap(func(x person) string {
+	v := c.ToMap(func(x person) any {
 		return x.Name
 	})
 	s := c.ToSlice()

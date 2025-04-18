@@ -49,9 +49,9 @@ func NewFromItems[T any](s ...T) *Collection[T] {
 	return &d
 }
 
-// NewFromStringMap creates a new Collection from a map with string keys
-func NewFromStringMap[T any](m map[string]T) *Collection[T] {
-	var values []T
+// NewFromMap creates a new Collection from a map with string keys
+func NewFromMap[K comparable, V any](m map[K]V) *Collection[V] {
+	var values []V
 	for _, v := range m {
 		values = append(values, v)
 	}
@@ -739,9 +739,9 @@ func (c *Collection[T]) ToSlice() []T {
 	return val
 }
 
-// ToStringMap converts the collection to a map with string keys
-func (c *Collection[T]) ToStringMap(keySelector func(x T) string) map[string]T {
-	m := make(map[string]T)
+// ToMap converts the collection to a map with string keys
+func (c *Collection[T]) ToMap(keySelector func(x T) any) map[any]T {
+	m := make(map[any]T)
 	for v := range *c {
 		m[keySelector(v)] = v
 	}
@@ -889,10 +889,10 @@ func Mode[T comparable](c *Collection[T]) (mode T, err error) {
 }
 
 // Map converts the collection to a map
-func ToMap[T any, K comparable, V any](c *Collection[T], keySelector func(x T) K, valueSelector func(x T) V) map[K]V {
-	m := make(map[K]V)
+func ToMap[T any, K comparable](c *Collection[T], keySelector func(x T) K) map[K]T {
+	m := make(map[K]T)
 	for v := range *c {
-		m[keySelector(v)] = valueSelector(v)
+		m[keySelector(v)] = v
 	}
 	return m
 }

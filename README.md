@@ -117,7 +117,7 @@ for category, group := range groups {
 
 ### Conversion
 
-- `ToMap[T any, K comparable, V any](c *Collection[T], keySelector func(x T) K, valueSelector func(x T) V) map[K]V` - Converts a collection to a map
+- `ToMap[T any, K comparable](c *Collection[T], keySelector func(x T) K) map[K]T` - Converts a collection to a map
 
 ### Numeric Operations
 
@@ -196,7 +196,7 @@ for category, group := range groups {
 ### Conversion
 
 - `ToSlice() []T` - Convert collection to a slice
-- `ToStringMap(keySelector func(x T) string) map[string]T` - Convert collection to a map with string keys
+- `ToMap(keySelector func(x T) any) map[any]T` - Convert collection to a map
 - `ToChannel() <-chan T` - Convert collection to a channel
 - `ToJSON() ([]byte, error)` - Serialise collection into JSON string
 
