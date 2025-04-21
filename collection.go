@@ -396,6 +396,11 @@ func (c *Collection[T]) Any(f func(x T) bool) bool {
 	return false
 }
 
+// None returns true if no elements satisfy the predicate
+func (c *Collection[T]) None(f func(x T) bool) bool {
+	return !c.Any(f)
+}
+
 type NumericalTypes interface {
 	~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~float32 | ~float64
 }

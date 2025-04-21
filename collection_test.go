@@ -998,6 +998,32 @@ func TestAny(t *testing.T) {
 	})
 }
 
+func TestNone(t *testing.T) {
+	t.Run("True", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c"})
+		v := c.None(func(x string) bool {
+			return x == "d"
+		})
+		assert.True(t, v)
+	})
+
+	t.Run("False", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{"a", "b", "c"})
+		v := c.None(func(x string) bool {
+			return x == "b"
+		})
+		assert.False(t, v)
+	})
+
+	t.Run("EmptyCollection", func(t *testing.T) {
+		c := collection.NewFromSlice([]string{})
+		v := c.None(func(x string) bool {
+			return true
+		})
+		assert.True(t, v)
+	})
+}
+
 func TestOrderBy(t *testing.T) {
 	t.Run("IntAscending", func(t *testing.T) {
 		c := collection.NewFromSlice([]int{3, 1, 4, 2})
