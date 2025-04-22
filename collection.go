@@ -2,12 +2,13 @@ package collection
 
 import (
 	"context"
+	cryptorand "crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"iter"
 	"math/big"
-	"math/rand/v2"
+	"math/rand"
 	"runtime"
 	"slices"
 	"strings"
@@ -114,7 +115,7 @@ func (c *Collection[T]) Reject(f func(x T) bool) *Collection[T] {
 
 // Find returns the first element that matches the given predicate.
 // If no element matches, it returns the zero value and false.
-func (c *Collection[T]) Find(f func(T) bool) (found T, ok bool) {
+func (c *Collection[T]) Find(f func(T) bool) (v T, ok bool) {
 	for v := range *c {
 		if f(v) {
 			return v, true
@@ -681,10 +682,9 @@ func (c *Collection[T]) Peek(action func(T)) *Collection[T] {
 }
 
 // ElementAt returns the element at the specified index or a default value if index is out of range
-func (c *Collection[T]) ElementAt(index int) (T, bool) {
-	var d T
+func (c *Collection[T]) ElementAt(index int) (v T, ok bool) {
 	if index < 0 {
-		return d, false
+		return
 	}
 
 	count := 0
@@ -694,15 +694,49 @@ func (c *Collection[T]) ElementAt(index int) (T, bool) {
 		}
 		count++
 	}
-	return d, false
+	return
 }
 
+// ElementAtOrError returns the element at the specified index or an error if index is out of range
 func (c *Collection[T]) ElementAtOrError(index int) (T, error) {
 	val, ok := c.ElementAt(index)
 	if !ok {
 		return val, ErrIndexOutOfRange
 	}
 	return val, nil
+}
+
+// Random returns a random element from the collection and true, or a default value and false if collection is empty
+func (c *Collection[T]) Random() (v T, ok bool) {
+	slice := c.ToSlice()
+	if len(slice) == 0 {
+		return
+	}
+
+	i, err := cryptorand.Int(cryptorand.Reader, big.NewInt(int64(len(slice))))
+	if err != nil {
+		return
+	}
+
+	return slice[i.Int64()], true
+}
+
+// RandomN returns n random elements from the collection and true, or an empty slice and false if not enough elements
+func (c *Collection[T]) RandomN(n int) (v []T, ok bool) {
+	slice := c.ToSlice()
+	if n <= 1 || len(slice) < n {
+		return
+	}
+
+	for range n {
+		i, err := cryptorand.Int(cryptorand.Reader, big.NewInt(int64(len(slice))))
+		if err != nil {
+			return
+		}
+		v = append(v, slice[i.Int64()])
+	}
+
+	return v, true
 }
 
 // IndexOf returns the index of the first element that satisfies the predicate
@@ -778,10 +812,10 @@ func (c *Collection[T]) ToJSON() ([]byte, error) {
 }
 
 // Pop removes the last element from collection and returns it
-func (c *Collection[T]) Pop() (d T, err error) {
+func (c *Collection[T]) Pop() (v T, err error) {
 	s := c.ToSlice()
 	if len(s) == 0 {
-		return d, ErrEmptyCollection
+		return v, ErrEmptyCollection
 	}
 	last := s[len(s)-1]
 	*c = *NewFromSlice(s[:len(s)-1])
@@ -789,10 +823,10 @@ func (c *Collection[T]) Pop() (d T, err error) {
 }
 
 // Shift removes the first element from collection and returns it
-func (c *Collection[T]) Shift() (d T, err error) {
+func (c *Collection[T]) Shift() (v T, err error) {
 	s := c.ToSlice()
 	if len(s) == 0 {
-		return d, ErrEmptyCollection
+		return v, ErrEmptyCollection
 	}
 	first := s[0]
 	*c = *NewFromSlice(s[1:])

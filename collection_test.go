@@ -2010,6 +2010,58 @@ func TestElementAtOrError(t *testing.T) {
 	})
 }
 
+func TestRandom(t *testing.T) {
+	t.Run("RandomElement", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 3, 4, 5})
+		result, ok := c.Random()
+
+		assert.True(t, ok)
+		assert.Contains(t, []int{1, 2, 3, 4, 5}, result)
+	})
+
+	t.Run("EmptyCollection", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{})
+		result, ok := c.Random()
+
+		assert.False(t, ok)
+		assert.Equal(t, 0, result)
+	})
+}
+
+func TestRandomN(t *testing.T) {
+	t.Run("RandomElements", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2, 3, 4, 5})
+		result, ok := c.RandomN(3)
+
+		assert.True(t, ok)
+		assert.Equal(t, 3, len(result))
+	})
+
+	t.Run("NLessThan1", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2})
+		result, ok := c.RandomN(0)
+
+		assert.False(t, ok)
+		assert.Len(t, result, 0)
+	})
+
+	t.Run("MoreThanAvailable", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{1, 2})
+		result, ok := c.RandomN(5)
+
+		assert.False(t, ok)
+		assert.Len(t, result, 0)
+	})
+
+	t.Run("EmptyCollection", func(t *testing.T) {
+		c := collection.NewFromSlice([]int{})
+		result, ok := c.RandomN(3)
+
+		assert.False(t, ok)
+		assert.Len(t, result, 0)
+	})
+}
+
 func TestIndexOf(t *testing.T) {
 	t.Run("ElementFound", func(t *testing.T) {
 		c := collection.NewFromSlice([]int{10, 20, 30, 40})

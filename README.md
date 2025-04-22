@@ -160,6 +160,8 @@ for category, group := range groups {
 - `func (c *Collection[T]) LastOrError() (T, error)` - Get the last element or error
 - `func (c *Collection[T]) ElementAt(index int) (T, bool)` - Get the element at index or false
 - `func (c *Collection[T]) ElementAtOrError(index int) (T, error)` - Get the element at index or error
+- `func (c *Collection[T]) Random() (v T, ok bool)`- Get a random element from the collection or error
+- `func (c *Collection[T]) RandomN(n int) (v []T, ok bool)` - Get n random elements from the collection or error
 - `func (c *Collection[T]) IndexOf(predicate func(x T) bool) int` - Get the index of element that satisfies the predicate, or return `-1`
 - `func (c *Collection[T]) Partition(predicate func(x T) bool) (*Collection[T], *Collection[T])` - Divide collection into two based on predicate. The first collection contains elements that satisfy the predicate, the second contains elements that don't
 - `func (c *Collection[T]) ForEach(action func(v T))` - Execute action against each element. Consider iterating over collection instead
@@ -184,8 +186,8 @@ for category, group := range groups {
 - `func (c *Collection[T]) Concat(other *Collection[T]) *Collection[T]` - Concatenate collections
 - `func (c *Collection[T]) Append(e T) *Collection[T]` - Add element to the end of the collection
 - `func (c *Collection[T]) Prepend(e T) *Collection[T]` - Add element to the beginning of the collection
-- `func (c *Collection[T]) Pop() (d T, err error)` - Removes the last element from collection and returns it
-- `func (c *Collection[T]) Shift() (d T, err error)` - Removes the first element from collection and returns it
+- `func (c *Collection[T]) Pop() (v T, err error)` - Removes the last element from collection and returns it
+- `func (c *Collection[T]) Shift() (v T, err error)` - Removes the first element from collection and returns it
 
 ### Aggregation
 
