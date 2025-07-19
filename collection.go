@@ -787,11 +787,7 @@ func (c *Collection[T]) ToSlice() []T {
 
 // ToMap converts the collection to a map with string keys
 func (c *Collection[T]) ToMap(keySelector func(x T) any) map[any]T {
-	m := make(map[any]T)
-	for v := range *c {
-		m[keySelector(v)] = v
-	}
-	return m
+	return ToMap(c, keySelector)
 }
 
 // ToChannel converts the collection to a channel
@@ -966,6 +962,7 @@ func Sum[T NumericalTypes](c *Collection[T]) *big.Float {
 	return big.NewFloat(sum)
 }
 
+// Min returns the smallest value in the collection
 func Min[T NumericalTypes](c *Collection[T]) T {
 	min := T(0)
 	first := true
